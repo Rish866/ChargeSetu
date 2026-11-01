@@ -27,6 +27,16 @@ check /operator 200
 check /admin 200
 check /operator/stations/new 200
 check /manifest.webmanifest 200
+check /contact 200
+check /privacy 200
+check /terms 200
+check /login/forgot 200
+check /account/password 200
+check /robots.txt 200
+check /sitemap.xml 200
+check /icon.svg 200
+check /icon-192.png 200
+check "/stations?verified=1" 200
 check /bogus-page 404
 
 # Streamed (partially prerendered) routes send 200 before notFound() runs;

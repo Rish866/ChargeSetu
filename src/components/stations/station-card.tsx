@@ -2,13 +2,14 @@ import Link from "next/link";
 import { Clock, IndianRupee, MapPin, Navigation } from "lucide-react";
 import { ButtonAnchor, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { directionsUrl, displayPrice, formatDate, formatDistanceKm } from "@/lib/format";
+import { directionsUrl, displayPrice, formatDistanceKm } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import type { StationWithDistance } from "@/lib/stations/search";
 import {
   AvailabilityNotice,
   ConnectorBadges,
   DemoBadge,
+  FreshnessLine,
   PowerBadge,
   VerificationBadge,
 } from "./station-badges";
@@ -53,8 +54,8 @@ export function StationCard({ station }: { station: StationWithDistance }) {
         <dl className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center gap-1.5">
             <dt className="sr-only">{t.stations.price}</dt>
-            <IndianRupee aria-hidden className="size-4 text-ink-subtle" />
-            <dd className={price ? "font-semibold" : "text-ink-subtle"}>{price ?? t.stations.priceNotVerified}</dd>
+            <IndianRupee aria-hidden className={price ? "size-4 text-ink-subtle" : "size-4 text-amber-700"} />
+            <dd className={price ? "font-semibold" : "font-medium text-amber-800"}>{price ?? t.stations.priceNotVerified}</dd>
           </div>
           <div className="flex items-center gap-1.5">
             <dt className="sr-only">{t.stations.hours}</dt>
@@ -65,11 +66,7 @@ export function StationCard({ station }: { station: StationWithDistance }) {
 
         <div className="mt-auto space-y-1 border-t border-line pt-3">
           <AvailabilityNotice compact />
-          <p className="text-xs text-ink-subtle">
-            {station.lastVerifiedAt
-              ? `${t.stations.lastVerified} ${formatDate(station.lastVerifiedAt)}`
-              : `${t.stations.lastUpdated} ${formatDate(station.updatedAt)}`}
-          </p>
+          <FreshnessLine station={station} />
         </div>
       </div>
 

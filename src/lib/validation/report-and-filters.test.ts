@@ -46,6 +46,8 @@ describe("parseStationFilters", () => {
   });
 
   it("drops invalid values instead of throwing", () => {
+    expect(parseStationFilters({ verified: "1" }).verified).toBe("1");
+    expect(parseStationFilters({ verified: "yes" }).verified).toBeUndefined();
     const f = parseStationFilters({ connector: "warp-drive", minPower: "fast", view: "grid", lat: "999", lng: "72" });
     expect(f.connector).toBeUndefined();
     expect(f.minPower).toBeUndefined();

@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import Link from "next/link";
+import { useActionState, useEffect, useRef } from "react";
 import { submitReportAction } from "@/app/actions/reports";
 import { Alert } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button";
@@ -17,6 +18,15 @@ export function ReportForm({
   defaultStationId?: string;
 }) {
   const [state, formAction] = useActionState(submitReportAction, initialFormState);
+  // When the form first appeared — lets the server ignore instant bot submissions.
+  const shownAt = useRef(0);
+  useEffect(() => {
+    shownAt.current = Date.now();
+  }, []);
+  const submit = (fd: FormData) => {
+    fd.set("startedAt", String(shownAt.current));
+    return formAction(fd);
+  };
   const v = (k: string) => (typeof state.values?.[k] === "string" ? (state.values[k] as string) : undefined);
   const e = (k: string) => state.fieldErrors?.[k];
 
@@ -37,7 +47,7 @@ export function ReportForm({
   }
 
   return (
-    <form action={formAction} className="space-y-5" noValidate>
+    <form action={submit} className="space-y-5" noValidate>
       {state.status === "error" && state.message && <Alert tone="error">{state.message}</Alert>}
 
       <SelectField
@@ -82,6 +92,14 @@ export function ReportForm({
           Website <input type="text" name="website" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
+      <p className="text-xs text-ink-subtle">
+        Your report is seen only by our review team. If you add your email, we use it only to follow up on this report.
+        See our{" "}
+        <Link href="/privacy" className="underline">
+          Privacy Policy
+        </Link>
+        .
+      </p>
       <SubmitButton pendingText={t.common.sending} size="lg" className="w-full sm:w-auto">
         {t.report.submit}
       </SubmitButton>

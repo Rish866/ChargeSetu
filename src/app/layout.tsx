@@ -20,7 +20,18 @@ export const metadata: Metadata = {
   description:
     "Find EV charging stations across India by city, connector type and charging speed. Listings are submitted by operators and reviewed before publishing.",
   applicationName: t.brand.name,
+  keywords: ["EV charging", "charging station", "India", "CCS2", "Type 2", "electric vehicle", "EV charger near me"],
   appleWebApp: { capable: true, title: t.brand.name, statusBarStyle: "default" },
+  openGraph: {
+    type: "website",
+    siteName: t.brand.name,
+    locale: "en_IN",
+    title: `${t.brand.name} — ${t.brand.tagline}`,
+    description: "Search EV charging stations across India by city, connector and charging speed.",
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: t.brand.name }],
+  },
+  twitter: { card: "summary" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {

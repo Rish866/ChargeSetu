@@ -129,6 +129,14 @@ export const demoStore: DataStore = {
     );
   },
 
+  async listOperators() {
+    await dynamicRead();
+    return demoOperators.map((o) => ({
+      ...o,
+      stationCount: state().stations.filter((s) => s.operatorId === o.id).length,
+    }));
+  },
+
   async getCounts() {
     await dynamicRead();
     const st = state().stations;

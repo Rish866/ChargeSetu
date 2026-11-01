@@ -28,7 +28,7 @@ export function FiltersDisclosure({
         <SlidersHorizontal aria-hidden className="size-4" />
         {t.filters.title}
         {activeCount > 0 && (
-          <span className="rounded-full bg-brand-600 px-2 py-0.5 text-xs text-white">{activeCount}</span>
+          <span className="rounded-full bg-brand-700 px-2 py-0.5 text-xs text-white">{activeCount}</span>
         )}
         <ChevronDown aria-hidden className={cn("ml-auto size-4 transition-transform md:hidden", open && "rotate-180")} />
       </button>

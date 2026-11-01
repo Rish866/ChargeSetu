@@ -53,6 +53,13 @@ describe("filterStations", () => {
     }
   });
 
+  it("can limit results to verified stations", () => {
+    const r = filterStations(demoStations, { verified: "1" });
+    expect(r.length).toBeGreaterThan(0);
+    expect(r.length).toBeLessThan(published.length);
+    expect(r.every((s) => s.verificationStatus === "verified")).toBe(true);
+  });
+
   it("does not mutate the input list", () => {
     const copy = structuredClone(demoStations);
     filterStations(demoStations, { lat: 19, lng: 72.8 });

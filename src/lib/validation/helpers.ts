@@ -20,8 +20,11 @@ export function formDataToObject(
 }
 
 /** Empty strings become `undefined` so optional fields validate cleanly. */
-export const emptyToUndefined = (v: unknown) =>
-  typeof v === "string" && v.trim() === "" ? undefined : v;
+export const emptyToUndefined = (v: unknown) => {
+  if (typeof v !== "string") return v;
+  const trimmed = v.trim();
+  return trimmed === "" ? undefined : trimmed;
+};
 
 export const optionalText = (max: number) =>
   z.preprocess(

@@ -1,210 +1,187 @@
-# ChargeSetu — EV charging station finder for India (MVP)
+# ChargeSetu — EV charging station finder for India (pilot)
 
-A mobile-first web app (installable as a PWA) that helps EV drivers find existing charging
-stations across India. Charge point operators (CPOs) submit and manage their own listings, and
-admins review every submission before it goes live.
+A mobile-first web app, installable as a PWA, that helps EV drivers find existing charging stations
+across India. Charge point operators (CPOs) submit and manage their own listings, and admins review
+every submission before it goes live.
 
-> **What this is not:** we don't own or install chargers, and there is no live availability, no
-> bookings and no payments. The UI says so wherever it matters (e.g. "Availability not connected").
-> The name "ChargeSetu" is a placeholder.
+> **What this is not:** we don't own or install chargers, and there is **no live availability, no
+> bookings and no payments.** A listing doesn't imply a partnership with the operator. The UI says
+> this wherever it matters (for example, "Availability not connected").
 
-> ⚠️ **All bundled data is fictional.** Every station, operator, network, address, phone number and
-> price in the demo data is made up, and each is labelled **"Demo data"** in the UI. The coordinates
-> point to real neighbourhoods only so the map looks realistic. There are no real chargers there.
+> ⚠️ **Sample data is fictional.** Every bundled station, operator, network, phone number and price is
+> made up and labelled **"Demo data"**. Coordinates point to real neighbourhoods only so the map
+> looks realistic. Remove the samples before launch (see the [pilot checklist](docs/PILOT_CHECKLIST.md)).
+
+- **Live pilot:** https://chargesetu.vercel.app
+- **Before launching with real operators:** read [docs/PILOT_CHECKLIST.md](docs/PILOT_CHECKLIST.md)
 
 ---
 
 ## Features
 
 **Drivers (no account needed)**
-- `/`: search, "Stations near me" (browser geolocation), popular areas, recently verified stations
-- `/stations`: directory with **list/map toggle** and filters for city, connector, power and network.
-  Filters live in the URL, so a search can be shared or bookmarked. The form works without JavaScript.
-- `/stations/[id]`: details page (accepts an id or a slug) with connectors, kW, price, hours,
-  amenities, contact, photos, verification status, last-updated date, Google Maps / OSM directions
-- `/about`: how verification works and what each label means
-- `/report`: report wrong or outdated info (honeypot spam guard)
+- **Home (`/`):** search, "Stations near me", popular areas, recently verified stations
+- **Directory (`/stations`):**
+  - List and map views.
+  - One-tap quick filters: Verified only, CCS2, Type 2, Fast 50 kW+, 2W/3W.
+  - Full filters: city, connector, power, network, verified only.
+  - Filters live in the URL, so searches can be shared, and the search form works without JavaScript.
+- **Station details (`/stations/[id]`):** connectors, kW, tariff, hours, amenities, contact details, photos,
+  directions (Google Maps and OpenStreetMap), and freshness ("Verified 20 days ago"). Listings verified more
+  than 180 days ago show a warning.
+- **Prices (₹)** are shown **only for verified stations**. Unverified tariffs are clearly marked
+  "Price not yet verified".
+- **Report a problem (`/report`):** report wrong or outdated information.
+- **Information pages:** `/about` (how verification works), `/contact` (contact and data requests),
+  `/privacy` and `/terms` (drafts that need a lawyer's review).
 
-**Operators**: `/operator` (dashboard), `/operator/stations/new`, `/operator/stations/[id]/edit`
-- Every submission **and every edit** goes to `pending_review`. Operators can never publish or verify.
-- Rejected listings show the reviewer's reason.
+**Operators**
+- Sign-up collects the company name and a business phone, validated as an Indian number.
+- `/operator` (dashboard), `/operator/stations/new`, `/operator/stations/[id]/edit`.
+- Every submission **and every edit** goes back to `pending_review`. Operators can never publish or
+  verify their own listings, and rejected listings show the reviewer's reason.
 
-**Admins**: `/admin`, `/admin/stations/[id]`
-- Pending queue: approve, approve & verify, or reject with a reason
-- Mark verified or unverified, deactivate or re-publish, edit any station
-- Review user reports (resolve or dismiss)
-- Counts for stations, operators and open reports
+**Admins (`/admin`, `/admin/stations/[id]`)**
+- **Pending queue:** each card shows who submitted the station, its contact details and photo links. Admins can
+  approve, approve & verify, or reject with a reason.
+- **Listings:** verify or remove verification, deactivate or re-publish, and edit any station.
+- **Reports:** resolve or dismiss user reports.
+- **Operator accounts:** a list for checking that a company is genuine before trusting it.
+- **Counts:** published, verified, pending, rejected/inactive, operators, open reports.
 
-**Prices** are in INR (₹) and are **shown to drivers only once a station is verified.**
+**Accounts:** email and password sign-up with email confirmation, sign-in, sign-out, forgot password
+(reset by email), and a required Terms/Privacy consent checkbox at sign-up.
 
 ## Tech stack
 
 | Concern | Choice |
 |---|---|
-| Framework | Next.js 16 (App Router, Server Actions, Cache Components / Partial Prerendering) |
+| Framework | Next.js 16 (App Router, Server Actions, Cache Components) |
 | Language / UI | TypeScript, Tailwind CSS v4, Lucide icons |
-| Data & auth | Supabase (Postgres + Auth + Row Level Security) via `@supabase/ssr` |
-| Validation | Zod v4, run on the server for every submission |
-| Maps | Leaflet + react-leaflet + OpenStreetMap tiles (no API key). The list view always works. |
-| Tests | Vitest |
+| Data and auth | Supabase (Postgres, Auth, Row Level Security) via `@supabase/ssr` |
+| Validation | Zod v4, run on the server for every form |
+| Maps | Leaflet + OpenStreetMap tiles (no API key). The list view always works. |
+| Tests | Vitest (unit tests, plus database security tests in PGlite), Playwright + axe-core (browser and accessibility) |
 
-Notes on choices:
-- **No service-role key.** The app only uses the public anon key. Permissions are enforced by RLS
-  policies and a moderation trigger in Postgres, plus explicit role checks in every server action.
-- **Map markers use Leaflet `CircleMarker`s**, so no marker image assets or bundler tweaks are needed.
-  If the map script fails to load, an error boundary shows a notice and the list still renders.
-- **Photos are https URLs**, not uploads. Uploads would need Supabase Storage, which is a planned step.
-- **Next.js 16 Cache Components** are on (the `create-next-app` default). Every page that reads
-  request data (search params, cookies, the session) renders inside `<Suspense>` with a skeleton
-  fallback, so the static shell loads instantly.
+## Quick start on your computer (demo mode)
 
-## Quick start (demo mode, no setup)
-
-Requires **Node.js 20.9+** (Node 22 recommended).
+Requires Node.js 20.9+ (22 recommended).
 
 ```bash
 npm install
 npm run dev            # http://localhost:3000
 ```
 
-With no environment variables set, the app runs in **demo mode**:
-- It uses an in-memory store seeded from `src/lib/data/demo-seed.ts`. Changes last until the server
-  restarts and are not shared between serverless instances.
-- `/login` shows a **role picker** (driver, operator or admin) so you can try every flow. This picker
-  is **not secure**. It turns off automatically once Supabase is configured.
-- A banner on every page says the data is fictional.
-
-Try this: sign in as the **operator** → submit a station → sign in as the **admin** → approve and
-verify it → it now appears on `/stations` with its price.
+With no Supabase settings, the app uses fictional in-memory data and a **role picker** on `/login`
+(driver, operator or admin). The picker works **only in local development**. On a deployed site it is
+switched off unless you set `ALLOW_DEMO_ROLES=true`, so a site deployed without a database can't hand
+out admin access.
 
 ## Scripts
 
 ```bash
 npm run dev               # dev server
 npm run build && npm start
-npm run lint              # ESLint (next/core-web-vitals + TypeScript)
-npm run typecheck         # next typegen + tsc
-npm test                  # Vitest unit tests
+npm run lint              # ESLint
+npm run typecheck         # route types + tsc
+npm test                  # unit tests + database security tests (no setup needed)
 npm run check             # lint + typecheck + tests
-npm run smoke             # (after build) start server and HTTP-check main routes
+npm run e2e               # build, start, run browser + accessibility tests (demo mode)
+                          #   first time only: npx playwright install chromium
+npm run smoke             # (after build) HTTP-check the main routes
 npm run db:seed:generate  # regenerate supabase/seed.sql from demo-seed.ts
 ```
 
-## Enabling the real database and authentication (Supabase)
+GitHub Actions (`.github/workflows/ci.yml`) runs lint, types, tests, the build and the browser tests
+on every pull request. No secrets are used.
 
-1. **Create a project** at [supabase.com](https://supabase.com).
-2. **Run the migration.** In the dashboard, open *SQL Editor*, paste the contents of
-   `supabase/migrations/20261031000000_initial_schema.sql` and run it.
-   Or, with the [Supabase CLI](https://supabase.com/docs/guides/cli): `supabase link` then `supabase db push`.
-3. **(Optional) Load the demo data.** Run `supabase/seed.sql`. These rows are `source = 'demo'` and
-   labelled in the UI. Remove them before launch with `delete from public.stations where source = 'demo';`.
-4. **Configure env vars:** `cp .env.example .env.local`, then set `NEXT_PUBLIC_SUPABASE_URL` and
-   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from *Project Settings → API*) and `NEXT_PUBLIC_SITE_URL`.
-5. **Auth settings:** under *Authentication → URL Configuration*, set the Site URL and add
-   `https://<your-domain>/auth/callback` (and `http://localhost:3000/auth/callback`) as redirect URLs.
-   Email/password sign-in is used, and email confirmation is supported via `/auth/callback`.
-6. **Restart** `npm run dev`. The demo banner and role picker disappear, and `/login` shows real
-   sign-in and sign-up.
-7. **Create your first admin.** Sign up normally, then run this in the SQL editor:
+## Connecting Supabase
+
+Already done for the live pilot. To set up a new project:
+
+1. Create a project at supabase.com. Choose the **Mumbai (ap-south-1)** region if you want data
+   hosted in India.
+2. In **SQL Editor**, run each file in `supabase/migrations/` **in filename order**:
+   - `20261031000000_initial_schema.sql`
+   - `20261101000000_pilot_hardening.sql`
+3. (Optional) Run `supabase/seed.sql` to load fictional demo stations.
+4. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` and
+   `NEXT_PUBLIC_SUPPORT_EMAIL` (see `.env.example`).
+5. In **Authentication → URL Configuration**, set the Site URL and add
+   `https://<your-domain>/auth/callback` as a redirect URL.
+6. Make yourself admin. Sign up on the site, then run:
    ```sql
    update public.profiles set role = 'admin'
    where id = (select id from auth.users where email = 'you@example.com');
    ```
-   No one can become an admin through the app. Signup only creates `customer` or `operator` accounts.
 
-Operators register at `/login` by choosing "A charge point operator". This creates a linked
-`operators` record. They can submit stations right away, and every submission waits for admin review.
+## Deploying (Vercel)
 
-## Data model
+1. Import the GitHub repo in Vercel.
+2. Add the environment variables from `.env.example`.
+3. Deploy. Vercel redeploys automatically whenever `main` changes.
 
-Defined in `supabase/migrations/…_initial_schema.sql`:
+Environment variable changes only take effect after a **Redeploy**.
 
-- **profiles**: `id` (FK `auth.users`), `full_name`, `role` (`customer`/`operator`/`admin`), `created_at`
-- **operators**: `id`, `profile_id` (unique), `company_name`, `contact_email`, `contact_phone`, `created_at`
-- **stations**: `id`, `operator_id` (nullable for admin-created records), `name`, `slug` (unique),
-  `network`, `address`, `area`, `city`, `state`, `country` (default India), `latitude`, `longitude`,
-  `connector_types[]`, `connector_count`, `power_kw`, `price`, `price_unit`, `opening_hours`,
-  `amenities[]`, `contact_phone`, `contact_email`, `photo_urls[]`, `status`
-  (`pending_review`/`published`/`rejected`/`inactive`), `verification_status`
-  (`unverified`/`verified`), `source` (`operator`/`admin`/`community`/`demo`), `rejection_reason`,
-  `last_verified_at`, `created_at`, `updated_at`
-- **reports**: `id`, `station_id`, `reporter_email` (optional), `issue_type`, `description`,
-  `status` (`open`/`resolved`/`dismissed`), `created_at`
-
-Beyond the original spec, I added `network`, `contact_email`, `photo_urls` and `rejection_reason`,
-because the UI needs them.
-
-Indexes cover status, public city/network/power lookups, connector types (GIN), operator, verified
-recency and report status.
-
-### Security (enforced in the database)
+## Security model
 
 | Who | Can |
 |---|---|
-| Anyone | Read **published** stations. Create an `open` report for a published station. |
-| Operator | Read and edit **their own** stations. Insert stations for their own company only. |
-| Admin | Everything above, plus read all stations and reports, moderate, and verify. |
+| Anyone | Read **published** stations. File an `open` report on a published station (max 5 per station per hour). |
+| Customer | The same as anyone. |
+| Operator | Read and edit **their own** stations. Create stations for their own company only. |
+| Admin | Everything: moderate, verify, read reports and operators. Admins are promoted only in SQL. |
 
-- The `enforce_station_moderation` trigger forces every non-admin insert or update to `pending_review`
-  and `unverified`, and locks `operator_id` and `slug`. Even a hand-crafted API call can't self-publish.
-- Users can update only their own `full_name` (column-level grant), never their `role`.
-- The app adds its own checks on top: every server action calls `authorize([...])` before doing
-  anything, and pages render an "access denied" state on the server. Admin data is never sent to
-  non-admins.
+**Enforced in the database (RLS policies and triggers):**
+- Any non-admin write is forced to `pending_review` and `unverified`.
+- `operator_id`, `slug` and timestamps are locked on such writes.
+- Users can change only their own `full_name`, never their role.
+- Sign-up can only create `customer` or `operator` accounts.
+- Photo links must be `https://`.
+- Report emails are format-checked.
+- Reports are rate-limited per station.
+
+**Enforced in the app:**
+- Every server action authorises the user first, and admin data is never sent to non-admins.
+- All input is validated with Zod, and redirects are limited to same-site paths.
+- Auth errors are generic, so the forms can't be used to find out who has an account.
+- Public forms have a honeypot and a minimum fill-time check.
+- Security headers are sent (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS).
+- The service-role key is never used.
+
+**Known gaps:**
+- There is no Content-Security-Policy yet.
+- There is no CAPTCHA on sign-up or report forms. Supabase supports hCaptcha and Turnstile under
+  Authentication → Attack Protection.
+- Photos are external links shown only after admin approval. There are no uploads.
+
+Both migrations are covered by `tests/db/rls.test.ts`.
 
 ## Project structure
 
 ```
-src/
-  app/                    routes (pages, error/not-found, manifest, auth callback)
-    actions/              server actions: auth, stations (operator), admin, reports
-  components/
-    ui/                   design system: Button, Badge, Card, Alert, form fields, skeletons
-    layout/               header, desktop + mobile bottom nav, footer, demo banner
-    stations/             station card, badges, filters, Leaflet map (+ loader/fallback)
-    forms/                station form, report form, auth forms
-    admin/ auth/          moderation buttons, access-denied state
-  lib/
-    validation/           Zod schemas (station, report, filters) + tests
-    stations/             search/filter/distance logic and moderation rules + tests
-    data/                 DataStore interface, demo (in-memory) and Supabase implementations
-    auth/                 session (demo cookie or Supabase), safe redirects
-    supabase/             server client, session refresh for proxy.ts
-    i18n/                 UI strings (English). Add hi.ts / mr.ts for Hindi / Marathi.
-  proxy.ts                refreshes Supabase auth cookies (Next 16's renamed middleware)
-supabase/
-  migrations/             schema, RLS, triggers
-  seed.sql                fictional demo data (generated)
+src/app/            pages, server actions (actions/), auth callback, sitemap, robots, manifest, icons
+src/components/     ui/ (design system), layout/, stations/, forms/, admin/, auth/, legal/
+src/lib/            validation/ (Zod), stations/ (search, moderation rules), data/ (demo + Supabase stores),
+                    auth/, supabase/, i18n/ (English; add hi/mr), india.ts (phone, freshness), abuse.ts
+supabase/           migrations/ (schema, RLS, triggers), seed.sql (fictional demo data)
+tests/db/           database security tests      e2e/   browser tests
+docs/               PILOT_CHECKLIST.md
 ```
 
 ## Adding Hindi or Marathi
 
-UI strings live in `src/lib/i18n/en.ts`. Copy it to `hi.ts` or `mr.ts`, translate the values, and
-register the new file in `src/lib/i18n/index.ts`. TypeScript will flag any missing keys. The next
-step after that is locale routing (e.g. `/hi/...`) or a language switcher stored in a cookie.
+Copy `src/lib/i18n/en.ts` to `hi.ts` or `mr.ts`, translate the values, and register the file in
+`src/lib/i18n/index.ts`. Some page text (the legal pages and some labels) is still written directly in
+components and would need moving into the dictionary.
 
-## Deployment (e.g. Vercel)
+## Known limitations
 
-1. Push to GitHub and import the repo in Vercel. The framework is detected automatically.
-2. Add the env vars from `.env.example`, setting `NEXT_PUBLIC_SITE_URL` to your production URL.
-3. Add `https://<your-domain>/auth/callback` to Supabase's allowed redirect URLs.
-4. For production traffic, switch `NEXT_PUBLIC_MAP_TILE_URL` to a commercial tile provider. The public
-   OpenStreetMap tile servers have a [usage policy](https://operations.osmfoundation.org/policies/tiles/).
-
-Any Node.js host works too: `npm run build && npm start`.
-
-> If you deploy **without** Supabase, the site runs in demo mode and anyone can pick the admin role.
-> That is fine for a preview, but not for real use.
-
-## Known limitations and next steps
-
-- No live availability, bookings or payments. These need real CPO integrations, e.g. OCPI.
-- Photos are URLs only. Next step: Supabase Storage uploads with moderation.
-- Free-text search and distance sorting run in app code over up to 500 filtered rows. For national
-  scale, move to Postgres full-text search plus PostGIS `ST_DWithin`.
-- An operator's edit to a published station hides it until it is re-approved. A future version could
-  keep the live version visible while changes wait for review.
-- Missing stations render the not-found UI with `noindex`, but return HTTP 200. That is a trait of
-  streamed (partially prerendered) routes.
-- No offline service worker yet. The app is installable through its web manifest.
-- Report rate limiting is just a honeypot. Add CAPTCHA or rate limits before public launch.
+- No live availability, bookings or payments. These need real operator integrations, e.g. OCPI.
+- Missing station pages show "Station not found" with `noindex`, but return HTTP 200, because the page
+  starts streaming before the lookup finishes.
+- Search and distance sorting run in app code over up to 500 rows. At national scale, move to Postgres
+  full-text search and PostGIS.
+- An operator's edit to a published station hides it until an admin re-approves it.
+- Users can't delete their own accounts from the app. Deletion requests go to the support email and an
+  admin removes the account in Supabase (**Authentication → Users**).

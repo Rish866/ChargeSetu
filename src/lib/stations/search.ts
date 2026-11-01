@@ -50,6 +50,7 @@ export function filterStations(
     if (filters.network && norm(s.network) !== norm(filters.network)) return false;
     if (filters.connector && !s.connectorTypes.includes(filters.connector)) return false;
     if (filters.minPower && s.powerKw < filters.minPower) return false;
+    if (filters.verified && s.verificationStatus !== "verified") return false;
     return true;
   });
 

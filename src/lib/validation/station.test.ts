@@ -41,6 +41,15 @@ describe("parseStationForm", () => {
     expect(r.data.connectorTypes).toEqual(["ccs2", "type2"]);
     expect(r.data.contactEmail).toBeNull();
     expect(r.data.photoUrls).toEqual([]);
+    expect(r.data.contactPhone).toBe("+91 98765 43210");
+  });
+
+  it("normalises Indian phone formats and rejects foreign numbers", () => {
+    const r = parseStationForm(form({ contactPhone: "098765-43210" }));
+    expect(r.success && r.data.contactPhone).toBe("+91 98765 43210");
+    const foreign = parseStationForm(form({ contactPhone: "+1 415 555 0100" }));
+    expect(foreign.success).toBe(false);
+    if (!foreign.success) expect(foreign.fieldErrors.contactPhone?.[0]).toMatch(/Indian number/);
   });
 
   it("rejects coordinates outside India", () => {
@@ -114,6 +123,12 @@ describe("parseStationForm", () => {
 
     const script = parseStationForm(form({ photoUrls: "javascript:alert(1)" }));
     expect(script.success).toBe(false);
+  });
+
+  it("reports every problem at once (a bad phone doesn't hide the price error)", () => {
+    const r = parseStationForm(form({ latitude: "51.5", contactPhone: "+1 415 555 0100", price: "" }));
+    expect(r.success).toBe(false);
+    if (!r.success) expect(Object.keys(r.fieldErrors).sort()).toEqual(["contactPhone", "latitude", "price"]);
   });
 
   it("echoes submitted values so the form can be re-filled", () => {
