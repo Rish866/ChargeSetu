@@ -251,6 +251,49 @@ try {
   await page.goto(`${BASE}/stations?q=phoenix`);
   await page.waitForSelector("text=1 station found");
   ok("approved station public with verified price", (await page.locator("text=₹23.5/kWh").count()) > 0);
+
+  // ---------- Station leads (admin) ----------
+  await page.goto(`${BASE}/admin/leads`);
+  await page.waitForSelector("h1:has-text('Station leads')");
+  ok("leads: list shows demo leads", (await page.locator("text=VoltYatra Thane Station Road (Demo lead)").count()) === 1);
+  ok("leads: missing fields shown", (await page.locator("text=Still needed before publishing").count()) >= 2);
+  await a11y("leads list");
+  await page.locator("li:has-text('VoltYatra Thane Station Road')").getByRole("link", { name: "Review", exact: true }).click();
+  await page.waitForSelector("text=Create a station from this lead");
+  ok("leads: form prefilled from lead", (await page.inputValue("#f-name")) === "VoltYatra Thane Station Road (Demo lead)" && (await page.isChecked("input[name=connectorTypes][value=ccs2]")) && (await page.inputValue("#f-powerKw")) === "60");
+  ok("leads: nothing invented", (await page.inputValue("#f-latitude")) === "" && (await page.inputValue("#f-openingHours")) === "" && (await page.inputValue("#f-connectorCount")) === "");
+  await page.click("text=Create station (pending review)");
+  await page.waitForSelector("text=Latitude must be a number");
+  ok("leads: can't convert without confirmed coordinates", true);
+  await page.fill("#f-latitude", "19.1860");
+  await page.fill("#f-longitude", "72.9750");
+  await page.fill("#f-area", "Thane West");
+  await page.fill("#f-connectorCount", "2");
+  await page.fill("#f-openingHours", "24 hours");
+  await page.fill("#f-price", "20");
+  await page.click("text=Create station (pending review)");
+  await page.waitForURL(/notice=from-lead/);
+  await page.waitForSelector("text=Station created from the lead");
+  ok("leads: converted into a pending station", (await page.locator("text=Pending review").count()) > 0 && (await page.locator("text=Not yet verified").count()) > 0);
+  await page.goto(`${BASE}/stations?q=thane%20station%20road`);
+  await page.waitForSelector("text=No stations match");
+  ok("leads: converted station hidden until approved", true);
+  await page.goto(`${BASE}/admin/leads?status=converted`);
+  await page.waitForSelector("text=VoltYatra Thane Station Road");
+  ok("leads: lead marked converted", (await page.locator("text=Converted to station").count()) === 1);
+  // Reject the other lead
+  await page.goto(`${BASE}/admin/leads/00000000-0000-4000-8000-f10000000002`);
+  await page.fill("#lead-note", "Not public — residents only");
+  await page.click("button:has-text('Reject lead')");
+  await page.waitForSelector("text=This lead has already been handled");
+  ok("leads: reject a lead", true);
+
+  // Non-admins can't see leads
+  await page.goto(`${BASE}/login?next=/admin/leads`);
+  await page.click("text=Continue as operator");
+  await page.waitForURL((u) => u.pathname === "/admin/leads");
+  await page.waitForSelector("text=You don't have access");
+  ok("leads: operator blocked", (await page.locator("text=VoltYatra Thane").count()) === 0);
 } catch (err) {
   results.push(`FAIL exception at ${page.url()}: ${err.message.split("\n")[0]}`);
   const shot = process.env.E2E_FAILURE_SCREENSHOT ?? "e2e-failure.png";

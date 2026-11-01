@@ -1,11 +1,13 @@
 import type { StationWithDistance } from "@/lib/stations/search";
 import type {
   DashboardCounts,
+  LeadStatus,
   Operator,
   Report,
   ReportStatus,
   Station,
   StationSource,
+  StationLead,
   StationStatus,
   VerificationStatus,
 } from "@/lib/types";
@@ -23,6 +25,12 @@ export interface ModerationPatch {
 export interface CreateStationOptions extends ModerationPatch {
   operatorId: string | null;
   source: StationSource;
+}
+
+export interface LeadPatch {
+  status?: LeadStatus;
+  reviewNote?: string | null;
+  stationId?: string | null;
 }
 
 export interface OperatorSummary extends Operator {
@@ -58,6 +66,9 @@ export interface DataStore {
   listAllStations(status?: StationStatus): Promise<Station[]>;
   listReports(status?: ReportStatus): Promise<Report[]>;
   listOperators(): Promise<OperatorSummary[]>;
+  listLeads(status?: LeadStatus): Promise<StationLead[]>;
+  getLead(id: string): Promise<StationLead | null>;
+  updateLead(id: string, patch: LeadPatch): Promise<StationLead | null>;
   getCounts(): Promise<DashboardCounts>;
 
   // ---- Writes ----

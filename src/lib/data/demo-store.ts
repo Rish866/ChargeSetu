@@ -2,8 +2,8 @@ import "server-only";
 import { connection } from "next/server";
 import { slugify } from "@/lib/format";
 import { filterOptions, filterStations } from "@/lib/stations/search";
-import type { Report, Station } from "@/lib/types";
-import { demoOperators, demoReports, demoStations } from "./demo-seed";
+import type { Report, Station, StationLead } from "@/lib/types";
+import { demoLeads, demoOperators, demoReports, demoStations } from "./demo-seed";
 import { DataStoreError, type DataStore } from "./store";
 
 /**
@@ -14,6 +14,7 @@ import { DataStoreError, type DataStore } from "./store";
 interface DemoState {
   stations: Station[];
   reports: Report[];
+  leads: StationLead[];
 }
 
 const globalForDemo = globalThis as unknown as { __evDemoState?: DemoState };
@@ -23,6 +24,7 @@ function state(): DemoState {
     globalForDemo.__evDemoState = {
       stations: structuredClone(demoStations),
       reports: structuredClone(demoReports),
+      leads: structuredClone(demoLeads),
     };
   }
   return globalForDemo.__evDemoState;
@@ -137,6 +139,28 @@ export const demoStore: DataStore = {
     }));
   },
 
+  async listLeads(status) {
+    await dynamicRead();
+    return clone(
+      state()
+        .leads.filter((l) => !status || l.status === status)
+        .sort((a, b) => a.city.localeCompare(b.city) || a.stationName.localeCompare(b.stationName)),
+    );
+  },
+
+  async getLead(id) {
+    await dynamicRead();
+    const l = state().leads.find((x) => x.id === id);
+    return l ? clone(l) : null;
+  },
+
+  async updateLead(id, patch) {
+    const l = state().leads.find((x) => x.id === id);
+    if (!l) return null;
+    Object.assign(l, patch, { updatedAt: now() });
+    return clone(l);
+  },
+
   async getCounts() {
     await dynamicRead();
     const st = state().stations;
@@ -149,6 +173,7 @@ export const demoStore: DataStore = {
       verified: count((s) => s.status === "published" && s.verificationStatus === "verified"),
       operators: demoOperators.length,
       openReports: state().reports.filter((r) => r.status === "open").length,
+      pendingLeads: state().leads.filter((l) => l.status === "pending_review").length,
     };
   },
 

@@ -221,6 +221,41 @@ describe("admins", () => {
   });
 });
 
+describe("station leads", () => {
+  const leadInsert = (key: string, extra = "", extraVals = "") => `
+    insert into public.station_leads (dedupe_key, import_batch, station_name, address, city, state, source_url${extra})
+    values ('${key}', 'test', 'Lead Station', 'Plot 1, Sector 2', 'Navi Mumbai', 'Maharashtra', 'https://example.com/x'${extraVals})`;
+
+  beforeAll(async () => {
+    await db.exec(leadInsert("seed-lead"));
+  });
+
+  it("are invisible to anonymous visitors, customers and operators", async () => {
+    await expect(as(null, () => db.query(`select * from public.station_leads`))).rejects.toThrow();
+    for (const who of [CUST, OP_A]) {
+      expect(await as(who, () => count(`select count(*)::int n from public.station_leads`))).toBe(0);
+    }
+  });
+  it("can't be created or changed by non-admins", async () => {
+    await expect(as(null, () => db.query(leadInsert("anon-lead")))).rejects.toThrow();
+    await expect(as(OP_A, () => db.query(leadInsert("op-lead")))).rejects.toThrow();
+    const upd = await as(OP_A, () => rows(`update public.station_leads set status = 'converted' returning id`));
+    expect(upd).toHaveLength(0);
+  });
+  it("are visible to admins, and can never be marked verified", async () => {
+    expect(await as(ADMIN, () => count(`select count(*)::int n from public.station_leads`))).toBe(1);
+    await expect(as(ADMIN, () => db.query(`update public.station_leads set verification_status = 'verified'`))).rejects.toThrow();
+  });
+  it("de-duplicate on dedupe_key so re-imports insert nothing", async () => {
+    const r = await rows(`${leadInsert("seed-lead")} on conflict (dedupe_key) do nothing returning id`);
+    expect(r).toHaveLength(0);
+  });
+  it("reject unsafe source links and fake coordinates outside India", async () => {
+    await expect(db.query(leadInsert("bad-url").replace("'https://example.com/x'", "'javascript:alert(1)'"))).rejects.toThrow();
+    await expect(db.query(leadInsert("bad-lat", ", latitude, longitude", ", 51.5, 0.1"))).rejects.toThrow();
+  });
+});
+
 describe("data constraints", () => {
   it("rejects coordinates outside India", async () => {
     await expect(db.query(`update public.stations set latitude = 51.5 where id = '${PUBLISHED}'`)).rejects.toThrow();

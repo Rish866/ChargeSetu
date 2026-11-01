@@ -6,6 +6,7 @@ import { ModerationButtons } from "@/components/admin/moderation-buttons";
 import { AccessDenied } from "@/components/auth/access-denied";
 import { StationForm } from "@/components/forms/station-form";
 import { StatusBadge, VerificationBadge } from "@/components/stations/station-badges";
+import { Alert } from "@/components/ui/alert";
 import { Card, CardBody } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,18 +16,24 @@ import { isAdmin } from "@/lib/stations/moderation";
 
 export const metadata: Metadata = { title: "Edit station (admin)" };
 
-export default function AdminStationPage({ params }: PageProps<"/admin/stations/[id]">) {
+export default function AdminStationPage({ params, searchParams }: PageProps<"/admin/stations/[id]">) {
   return (
     <div className="mx-auto max-w-3xl">
       <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-        <AdminStation params={params} />
+        <AdminStation params={params} searchParams={searchParams} />
       </Suspense>
     </div>
   );
 }
 
-async function AdminStation({ params }: { params: PageProps<"/admin/stations/[id]">["params"] }) {
-  const [{ id }, user] = await Promise.all([params, getCurrentUser()]);
+async function AdminStation({
+  params,
+  searchParams,
+}: {
+  params: PageProps<"/admin/stations/[id]">["params"];
+  searchParams: PageProps<"/admin/stations/[id]">["searchParams"];
+}) {
+  const [{ id }, user, sp] = await Promise.all([params, getCurrentUser(), searchParams]);
   if (!isAdmin(user)) return <AccessDenied user={user} required="admin" next={`/admin/stations/${id}`} />;
 
   const station = await getStore().getStationById(id);
@@ -44,6 +51,12 @@ async function AdminStation({ params }: { params: PageProps<"/admin/stations/[id
           </div>
         }
       />
+      {sp.notice === "from-lead" && (
+        <Alert tone="success" title="Station created from the lead" className="mb-4">
+          It is pending review and hidden from drivers. Approve it below once you&apos;re happy with the details — use{" "}
+          <strong>Approve &amp; verify</strong> only if you have confirmed them with the operator or on site.
+        </Alert>
+      )}
       <Card className="mb-6">
         <CardBody>
           <h2 className="mb-3 text-sm font-semibold">Moderation</h2>

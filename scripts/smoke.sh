@@ -25,6 +25,7 @@ check /report 200
 check /login 200
 check /operator 200
 check /admin 200
+check /admin/leads 200
 check /operator/stations/new 200
 check /manifest.webmanifest 200
 check /contact 200

@@ -104,6 +104,7 @@ Already done for the live pilot. To set up a new project:
 2. In **SQL Editor**, run each file in `supabase/migrations/` **in filename order**:
    - `20261031000000_initial_schema.sql`
    - `20261101000000_pilot_hardening.sql`
+   - `20261102000000_station_leads.sql`
 3. (Optional) Run `supabase/seed.sql` to load fictional demo stations.
 4. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` and
    `NEXT_PUBLIC_SUPPORT_EMAIL` (see `.env.example`).
@@ -114,6 +115,41 @@ Already done for the live pilot. To set up a new project:
    update public.profiles set role = 'admin'
    where id = (select id from auth.users where email = 'you@example.com');
    ```
+
+## Importing station leads (CSV)
+
+A **lead** is a candidate station from a directory, article or operator site. Leads usually lack
+data a station needs before drivers can rely on it (coordinates, hours, tariff), so they live in
+the admin-only `station_leads` table, not in `stations`. Missing values stay empty and are never
+guessed.
+
+**CSV columns:** `station_name, operator, address, city, state, connector_types, power_kw,
+tariff_inr_per_kwh, access_status, source_url, verification_status, notes`. Separate multiple
+values with `;` (for example `CCS2; Type 2` and `60; 30`).
+
+1. Run the `20261102000000_station_leads.sql` migration once.
+2. Get the **Session pooler** connection string from Supabase (**Connect** → **Session pooler**).
+   If your password contains `@`, write it as `%40`. Keep this string out of git and out of Vercel.
+3. Run a dry run first. It writes nothing:
+   ```bash
+   DATABASE_URL='postgresql://...' npm run leads:import -- data/imports/your-file.csv
+   ```
+4. Then run the real import:
+   ```bash
+   DATABASE_URL='postgresql://...' npm run leads:import -- data/imports/your-file.csv --apply
+   ```
+
+**What the import guarantees:**
+- **Safe to rerun:** rows already imported are skipped (matched on name + address).
+- **Rejected rows** (missing name, address, city, state or a valid source link) are listed and not saved.
+- **Every lead** is `pending_review` and `unverified`.
+- **The `stations` table is never modified.** The script checks this and rolls back if it changes.
+
+**Reviewing leads:** open **Admin → Review leads** (`/admin/leads`).
+- **Review:** confirm the details with the operator or on site, then fill in the confirmed coordinates,
+  area, hours and connector count. This creates a station in the normal **pending review** queue, where
+  you approve it as usual.
+- **Reject** or **Mark as duplicate:** for leads that aren't public or real.
 
 ## Deploying (Vercel)
 

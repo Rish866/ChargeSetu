@@ -8,7 +8,7 @@
  *
  * Fixed UUIDs keep this file aligned with `supabase/seed.sql`.
  */
-import type { Operator, Report, Station } from "../types";
+import type { Operator, Report, Station, StationLead } from "../types";
 
 export const DEMO_IDS = {
   adminProfile: "00000000-0000-4000-8000-a00000000001",
@@ -495,5 +495,65 @@ export const demoReports: Report[] = [
     description: "(Demo report) The parking now closes at 10 PM, not 11 PM.",
     status: "open",
     createdAt: "2026-10-30T08:45:00.000Z",
+  },
+];
+
+/** Fictional leads (candidate stations) used to demo the admin lead review screen. */
+export const demoLeads: StationLead[] = [
+  {
+    id: "00000000-0000-4000-8000-f10000000001",
+    importBatch: "demo-leads",
+    sourceRow: 2,
+    stationName: "VoltYatra Thane Station Road (Demo lead)",
+    operatorName: "VoltYatra (Demo)",
+    address: "Near bus depot (fictional), Station Road, Thane West 400601",
+    city: "Thane",
+    state: "Maharashtra",
+    pincode: "400601",
+    latitude: null,
+    longitude: null,
+    connectorTypes: ["ccs2", "type2"],
+    connectorTypesRaw: "CCS2; Type 2",
+    powerKwMax: 60,
+    powerKwRaw: "60; 22",
+    tariffInrPerKwh: null,
+    accessNotes: "Depot premises; confirm public access",
+    sourceUrl: "https://example.com/demo-directory",
+    notes: "(Demo) Listed in a fictional directory.",
+    missingFields: ["coordinates", "tariff", "opening_hours", "area", "connector_count"],
+    qualityFlags: ["Several power values listed (60, 22 kW); highest used as max"],
+    status: "pending_review",
+    stationId: null,
+    reviewNote: null,
+    createdAt: "2026-11-01T09:00:00.000Z",
+    updatedAt: "2026-11-01T09:00:00.000Z",
+  },
+  {
+    id: "00000000-0000-4000-8000-f10000000002",
+    importBatch: "demo-leads",
+    sourceRow: 3,
+    stationName: "Shakti EV Vashi Plaza (Demo lead)",
+    operatorName: "Shakti EV (Demo)",
+    address: "Basement (fictional), Sector 17, Vashi, Navi Mumbai 400703",
+    city: "Navi Mumbai",
+    state: "Maharashtra",
+    pincode: "400703",
+    latitude: null,
+    longitude: null,
+    connectorTypes: [],
+    connectorTypesRaw: null,
+    powerKwMax: null,
+    powerKwRaw: null,
+    tariffInrPerKwh: null,
+    accessNotes: "Confirm access",
+    sourceUrl: "https://example.com/demo-article",
+    notes: null,
+    missingFields: ["coordinates", "connector_types", "power_kw", "tariff", "opening_hours", "area", "connector_count"],
+    qualityFlags: [],
+    status: "pending_review",
+    stationId: null,
+    reviewNote: null,
+    createdAt: "2026-11-01T09:00:00.000Z",
+    updatedAt: "2026-11-01T09:00:00.000Z",
   },
 ];
