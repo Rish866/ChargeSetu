@@ -142,6 +142,7 @@ export const supabaseStore: DataStore = {
     if (filters.network) q = q.ilike("network", filters.network);
     if (filters.connector) q = q.contains("connector_types", [filters.connector]);
     if (filters.minPower) q = q.gte("power_kw", filters.minPower);
+    if (filters.verified) q = q.eq("verification_status", "verified");
     const { data, error } = await q.limit(MAX_ROWS);
     if (error) fail("load stations", error);
     // Free-text matching and distance sorting are done in app code so the
@@ -247,6 +248,34 @@ export const supabaseStore: DataStore = {
         createdAt: r.created_at,
       }),
     );
+  },
+
+  async listOperators() {
+    const sb = await createSupabaseServerClient();
+    const { data, error } = await sb
+      .from("operators")
+      .select("id, profile_id, company_name, contact_email, contact_phone, created_at, stations(count)")
+      .order("created_at", { ascending: false })
+      .limit(MAX_ROWS);
+    if (error) fail("load operators", error);
+    type Row = {
+      id: string;
+      profile_id: string;
+      company_name: string;
+      contact_email: string;
+      contact_phone: string | null;
+      created_at: string;
+      stations: { count: number }[] | null;
+    };
+    return (data as Row[]).map((o) => ({
+      id: o.id,
+      profileId: o.profile_id,
+      companyName: o.company_name,
+      contactEmail: o.contact_email,
+      contactPhone: o.contact_phone,
+      createdAt: o.created_at,
+      stationCount: o.stations?.[0]?.count ?? 0,
+    }));
   },
 
   async getCounts() {

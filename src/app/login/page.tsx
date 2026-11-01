@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { Building2, Car, ShieldCheck } from "lucide-react";
 import { setDemoRole } from "@/app/actions/auth";
@@ -9,7 +10,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { safeNextPath } from "@/lib/auth/redirect";
-import { isSupabaseConfigured } from "@/lib/config";
+import { areDemoRolesAllowed, isSupabaseConfigured } from "@/lib/config";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -28,14 +29,34 @@ async function LoginContent({ searchParams }: { searchParams: PageProps<"/login"
   const sp = await searchParams;
   const next = safeNextPath(typeof sp.next === "string" ? sp.next : undefined, "");
 
-  if (!isSupabaseConfigured()) return <DemoRolePicker next={next} />;
+  if (!isSupabaseConfigured()) {
+    if (areDemoRolesAllowed()) return <DemoRolePicker next={next} />;
+    return (
+      <Alert tone="warning" title="Sign-in isn't available on this site yet">
+        This deployment has no account system connected, so sign-in is switched off. If you run this site, add your
+        Supabase settings (see the README) and redeploy.
+      </Alert>
+    );
+  }
+
+  const errorNotice =
+    sp.error === "confirmation"
+      ? "That confirmation link didn't work here — it may have expired or been opened in a different browser. Your email may already be confirmed, so try signing in. If that fails, sign up again to get a new link."
+      : sp.error === "reset"
+        ? "That password-reset link has expired or was already used. Request a new one below."
+        : null;
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="space-y-6">
+      {errorNotice && <Alert tone="warning">{errorNotice}</Alert>}
+      <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <CardBody className="space-y-4">
           <h2 className="text-lg font-semibold">Sign in</h2>
           <SignInForm next={next || "/"} />
+          <Link href="/login/forgot" className="inline-block text-sm font-medium text-brand-700 hover:underline">
+            Forgot your password?
+          </Link>
         </CardBody>
       </Card>
       <Card>
@@ -47,6 +68,7 @@ async function LoginContent({ searchParams }: { searchParams: PageProps<"/login"
           </p>
         </CardBody>
       </Card>
+      </div>
     </div>
   );
 }

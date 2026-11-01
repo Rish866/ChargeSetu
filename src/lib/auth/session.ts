@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { cache } from "react";
-import { isSupabaseConfigured } from "@/lib/config";
+import { areDemoRolesAllowed, isSupabaseConfigured } from "@/lib/config";
 import { DEMO_IDS } from "@/lib/data/demo-seed";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Role, SessionUser } from "@/lib/types";
@@ -82,7 +82,10 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
       return null;
     }
   }
+  // Read cookies first so pages that depend on the user are always rendered
+  // per request (never frozen into the static build output).
   const store = await cookies();
+  if (!areDemoRolesAllowed()) return null;
   return demoUserForRole(store.get(DEMO_ROLE_COOKIE)?.value);
 });
 

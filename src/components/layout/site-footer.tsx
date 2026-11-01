@@ -2,37 +2,47 @@ import Link from "next/link";
 import { t } from "@/lib/i18n";
 import { Logo } from "./logo";
 
+const linkClass = "hover:text-ink";
+
 export function SiteFooter() {
   return (
     <footer className="mt-16 border-t border-line bg-white">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm sm:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-3">
           <Logo />
           <p className="text-ink-muted">{t.brand.tagline}.</p>
           <p className="text-xs text-ink-subtle">
-            We list stations run by independent charge point operators. We don&apos;t own or operate
-            chargers, and we don&apos;t take bookings or payments.
+            We list stations run by independent charge point operators. We don&apos;t own or operate chargers, we
+            don&apos;t show live availability, and we don&apos;t take bookings or payments.
           </p>
         </div>
-        <div>
+        <nav aria-label="Drivers">
           <h2 className="mb-3 font-semibold">Drivers</h2>
           <ul className="space-y-2 text-ink-muted">
-            <li><Link className="hover:text-ink" href="/stations">{t.nav.stations}</Link></li>
-            <li><Link className="hover:text-ink" href="/about">{t.nav.about}</Link></li>
-            <li><Link className="hover:text-ink" href="/report">{t.nav.report}</Link></li>
+            <li><Link className={linkClass} href="/stations">{t.nav.stations}</Link></li>
+            <li><Link className={linkClass} href="/about">{t.nav.about}</Link></li>
+            <li><Link className={linkClass} href="/report">{t.nav.report}</Link></li>
           </ul>
-        </div>
-        <div>
+        </nav>
+        <nav aria-label="Operators">
           <h2 className="mb-3 font-semibold">Operators</h2>
           <ul className="space-y-2 text-ink-muted">
-            <li><Link className="hover:text-ink" href="/operator">Operator dashboard</Link></li>
-            <li><Link className="hover:text-ink" href="/operator/stations/new">Submit a station</Link></li>
-            <li><Link className="hover:text-ink" href="/login">{t.nav.signIn}</Link></li>
+            <li><Link className={linkClass} href="/operator">Operator dashboard</Link></li>
+            <li><Link className={linkClass} href="/operator/stations/new">Submit a station</Link></li>
+            <li><Link className={linkClass} href="/login">{t.nav.signIn}</Link></li>
           </ul>
-        </div>
+        </nav>
+        <nav aria-label="Help and legal">
+          <h2 className="mb-3 font-semibold">Help</h2>
+          <ul className="space-y-2 text-ink-muted">
+            <li><Link className={linkClass} href="/contact">Contact &amp; support</Link></li>
+            <li><Link className={linkClass} href="/privacy">Privacy Policy</Link></li>
+            <li><Link className={linkClass} href="/terms">Terms of Use</Link></li>
+          </ul>
+        </nav>
       </div>
       <p className="border-t border-line py-4 text-center text-xs text-ink-subtle">
-        Map data © OpenStreetMap contributors. Prices in INR (₹).
+        Map data © OpenStreetMap contributors. Prices in INR (₹), may exclude GST and parking fees.
       </p>
     </footer>
   );

@@ -1,7 +1,8 @@
 import { BadgeCheck, CircleDashed, FlaskConical, Gauge, Plug, WifiOff } from "lucide-react";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { connectorCurrent, connectorLabel, LIVE_AVAILABILITY_CONNECTED } from "@/lib/constants";
-import { formatKw } from "@/lib/format";
+import { formatDate, formatKw } from "@/lib/format";
+import { verificationFreshness } from "@/lib/india";
 import { t } from "@/lib/i18n";
 import type { Station, StationStatus } from "@/lib/types";
 
@@ -62,6 +63,28 @@ export function DemoBadge({ station }: { station: Pick<Station, "source"> }) {
     <Badge tone="amber" icon={<FlaskConical aria-hidden className="size-3" />}>
       {t.demo.label}
     </Badge>
+  );
+}
+
+/** "Verified 19 days ago (12 Oct 2026)", with a warning once data is old. */
+export function FreshnessLine({
+  station,
+}: {
+  station: Pick<Station, "verificationStatus" | "lastVerifiedAt" | "updatedAt">;
+}) {
+  if (station.verificationStatus !== "verified" || !station.lastVerifiedAt) {
+    return (
+      <p className="text-xs text-ink-subtle">
+        Details not independently checked · listing updated {formatDate(station.updatedAt)}
+      </p>
+    );
+  }
+  const f = verificationFreshness(station.lastVerifiedAt);
+  return (
+    <p className={f.state === "stale" ? "text-xs font-medium text-amber-800" : "text-xs text-ink-subtle"}>
+      {f.label} ({formatDate(station.lastVerifiedAt)})
+      {f.state === "stale" && " — may be outdated, check before travelling"}
+    </p>
   );
 }
 

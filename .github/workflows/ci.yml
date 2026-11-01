@@ -1,0 +1,64 @@
+name: CI
+
+# Runs on every pull request and on pushes to main. Uses demo mode only:
+# no secrets or database credentials are needed or available here.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, types, unit & database tests, build, browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit + database security tests
+        run: npm test
+
+      - name: Production build (demo mode)
+        run: npm run build
+
+      - name: Install browser for end-to-end tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser end-to-end + accessibility tests
+        env:
+          ALLOW_DEMO_ROLES: "true"
+          E2E_FAILURE_SCREENSHOT: e2e-failure.png
+        run: scripts/with-server.sh npm run test:e2e
+
+      - name: HTTP smoke test
+        env:
+          ALLOW_DEMO_ROLES: "true"
+        run: scripts/with-server.sh scripts/smoke.sh
+
+      - name: Upload failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure
+          path: e2e-failure.png
+          if-no-files-found: ignore

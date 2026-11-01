@@ -6,6 +6,7 @@ import {
   INDIAN_STATES,
   PRICE_UNIT_IDS,
 } from "@/lib/constants";
+import { parseIndianPhone } from "@/lib/india";
 import {
   emptyToUndefined,
   formDataToObject,
@@ -20,8 +21,24 @@ const requiredNumber = (label: string) =>
     z.coerce.number({ error: `${label} must be a number` }),
   );
 
-/** Indian mobile or landline: digits, spaces, +, -, (), 8–16 chars, 8+ digits. */
-const PHONE_RE = /^\+?[0-9()\s-]{8,16}$/;
+// A plain refinement (not a transform) so a bad phone number doesn't hide
+// other errors on the form. The number is normalised in the final transform.
+const indianPhone = z.preprocess(
+  emptyToUndefined,
+  z
+    .string()
+    .max(25, "Phone number is too long")
+    .refine((v) => parseIndianPhone(v).ok, {
+      message: "Enter an Indian number, e.g. +91 98765 43210, 020 2612 3456 or 1800 123 4567",
+    })
+    .optional(),
+);
+
+function normalisePhone(v: string | undefined): string | null {
+  if (!v) return null;
+  const p = parseIndianPhone(v);
+  return p.ok ? p.display : null;
+}
 
 /**
  * Validation for station submissions. Used on the server for every create and
@@ -102,17 +119,7 @@ export const stationInputSchema = z
       .array(z.enum(AMENITY_IDS, { error: "Unknown amenity" }))
       .default([])
       .transform((arr) => Array.from(new Set(arr))),
-    contactPhone: z.preprocess(
-      emptyToUndefined,
-      z
-        .string()
-        .trim()
-        .regex(PHONE_RE, "Enter a valid phone number, e.g. +91 98765 43210")
-        .refine((v) => v.replace(/\D/g, "").length >= 8, {
-          message: "Phone number needs at least 8 digits",
-        })
-        .optional(),
-    ),
+    contactPhone: indianPhone,
     contactEmail: z.preprocess(
       emptyToUndefined,
       z.email("Enter a valid email address").optional(),
@@ -147,7 +154,7 @@ export const stationInputSchema = z
   .transform((data) => ({
     ...data,
     price: data.priceUnit === "free" ? 0 : (data.price ?? null),
-    contactPhone: data.contactPhone ?? null,
+    contactPhone: normalisePhone(data.contactPhone),
     contactEmail: data.contactEmail ?? null,
   }));
 

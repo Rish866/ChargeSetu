@@ -36,6 +36,8 @@ const filterSchema = z.object({
     )
     .catch(undefined),
   view: z.preprocess(clean, z.enum(["list", "map"]).optional()).catch(undefined),
+  /** "1" = only stations whose details were verified by the review team. */
+  verified: z.preprocess(clean, z.enum(["1"]).optional()).catch(undefined),
 });
 
 export type StationFilters = z.output<typeof filterSchema>;

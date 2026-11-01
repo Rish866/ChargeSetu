@@ -13,13 +13,14 @@ import { SubmitButton } from "@/components/ui/form";
 import { PageHeader } from "@/components/ui/page-header";
 import { StationListSkeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/lib/auth/session";
-import { issueTypeLabel } from "@/lib/constants";
+import { amenityLabel, issueTypeLabel } from "@/lib/constants";
 import { getStore } from "@/lib/data";
 import { formatDate, formatKw, rawPrice } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { isAdmin } from "@/lib/stations/moderation";
 import { cn } from "@/lib/cn";
 import type { Station, StationStatus } from "@/lib/types";
+import type { OperatorSummary } from "@/lib/data/store";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -48,12 +49,14 @@ async function AdminDashboard({ searchParams }: { searchParams: PageProps<"/admi
   const statusFilter = STATUS_FILTERS.find((f) => f.value === statusParam)?.value ?? "all";
 
   const store = getStore();
-  const [counts, pending, reports, all] = await Promise.all([
+  const [counts, pending, reports, all, operators] = await Promise.all([
     store.getCounts(),
     store.listAllStations("pending_review"),
     store.listReports("open"),
     store.listAllStations(statusFilter === "all" ? undefined : statusFilter),
+    store.listOperators(),
   ]);
+  const operatorById = new Map(operators.map((o) => [o.id, o]));
 
   return (
     <div className="space-y-10">
@@ -86,7 +89,7 @@ async function AdminDashboard({ searchParams }: { searchParams: PageProps<"/admi
           <ul className="space-y-3">
             {pending.map((s) => (
               <li key={s.id}>
-                <StationAdminCard station={s} detailed />
+                <StationAdminCard station={s} operator={s.operatorId ? operatorById.get(s.operatorId) : undefined} detailed />
               </li>
             ))}
           </ul>
@@ -110,7 +113,7 @@ async function AdminDashboard({ searchParams }: { searchParams: PageProps<"/admi
                   </div>
                   <p className="text-sm">
                     <span className="text-ink-subtle">Station: </span>
-                    <Link href={`/admin/stations/${r.stationId}`} className="font-medium text-brand-700 hover:underline">
+                    <Link href={`/admin/stations/${r.stationId}`} className="font-medium text-brand-700 underline underline-offset-2">
                       {r.stationName ?? r.stationId}
                     </Link>
                   </p>
@@ -131,6 +134,47 @@ async function AdminDashboard({ searchParams }: { searchParams: PageProps<"/admi
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section aria-labelledby="operators-h" className="space-y-3">
+        <h2 id="operators-h" className="text-lg font-semibold">
+          Operator accounts ({operators.length})
+        </h2>
+        <p className="text-sm text-ink-muted">
+          Anyone can register as an operator. Before approving their first station, confirm the company is a genuine
+          charge point operator (for example by calling the number on their website).
+        </p>
+        {operators.length === 0 ? (
+          <p className="text-sm text-ink-muted">No operator accounts yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border border-line bg-white">
+            <table className="w-full min-w-[36rem] text-left text-sm">
+              <thead className="border-b border-line bg-gray-50 text-xs text-ink-subtle">
+                <tr>
+                  <th scope="col" className="px-4 py-2 font-medium">Company</th>
+                  <th scope="col" className="px-4 py-2 font-medium">Contact</th>
+                  <th scope="col" className="px-4 py-2 font-medium">Stations</th>
+                  <th scope="col" className="px-4 py-2 font-medium">Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                {operators.map((o) => (
+                  <tr key={o.id} className="border-b border-line last:border-0">
+                    <td className="px-4 py-2 font-medium">{o.companyName}</td>
+                    <td className="px-4 py-2">
+                      <a className="text-brand-700 underline underline-offset-2" href={`mailto:${o.contactEmail}`}>
+                        {o.contactEmail}
+                      </a>
+                      {o.contactPhone && <span className="block text-xs text-ink-subtle">{o.contactPhone}</span>}
+                    </td>
+                    <td className="px-4 py-2">{o.stationCount}</td>
+                    <td className="px-4 py-2">{formatDate(o.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
 
@@ -161,7 +205,7 @@ async function AdminDashboard({ searchParams }: { searchParams: PageProps<"/admi
           <ul className="space-y-3">
             {all.map((s) => (
               <li key={s.id}>
-                <StationAdminCard station={s} />
+                <StationAdminCard station={s} operator={s.operatorId ? operatorById.get(s.operatorId) : undefined} />
               </li>
             ))}
           </ul>
@@ -171,7 +215,15 @@ async function AdminDashboard({ searchParams }: { searchParams: PageProps<"/admi
   );
 }
 
-function StationAdminCard({ station: s, detailed = false }: { station: Station; detailed?: boolean }) {
+function StationAdminCard({
+  station: s,
+  operator,
+  detailed = false,
+}: {
+  station: Station;
+  operator?: OperatorSummary;
+  detailed?: boolean;
+}) {
   return (
     <Card className="space-y-3 p-4 sm:p-5">
       <div className="flex flex-wrap gap-1.5">
@@ -194,9 +246,54 @@ function StationAdminCard({ station: s, detailed = false }: { station: Station; 
           {s.address}, {s.area}, {s.city}, {s.state}
         </p>
       </div>
+      <p className="text-sm">
+        <span className="text-ink-subtle">Submitted by: </span>
+        {operator ? (
+          <>
+            <span className="font-medium">{operator.companyName}</span>{" "}
+            <a className="text-brand-700 underline underline-offset-2" href={`mailto:${operator.contactEmail}`}>
+              {operator.contactEmail}
+            </a>
+          </>
+        ) : s.operatorId ? (
+          "Operator account (details unavailable)"
+        ) : (
+          "Admin / unowned record"
+        )}
+      </p>
       {detailed && (
         <>
           <ConnectorBadges connectors={s.connectorTypes} />
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
+            <div>
+              <dt className="text-xs text-ink-subtle">Opening hours</dt>
+              <dd>{s.openingHours}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-ink-subtle">Station phone</dt>
+              <dd>{s.contactPhone ?? "—"}</dd>
+            </div>
+            <div className="col-span-2">
+              <dt className="text-xs text-ink-subtle">Amenities</dt>
+              <dd>{s.amenities.length ? s.amenities.map(amenityLabel).join(", ") : "—"}</dd>
+            </div>
+          </dl>
+          {s.photoUrls.length > 0 && (
+            <div>
+              <p className="mb-1 text-xs text-ink-subtle">
+                Photo links (open each and check it shows this charger before approving):
+              </p>
+              <ul className="flex flex-wrap gap-2 text-sm">
+                {s.photoUrls.map((u, i) => (
+                  <li key={u}>
+                    <a href={u} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-700 underline underline-offset-2">
+                      Photo {i + 1} ({new URL(u).hostname})
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
             <div>
               <dt className="text-xs text-ink-subtle">Power</dt>
@@ -214,7 +311,7 @@ function StationAdminCard({ station: s, detailed = false }: { station: Station; 
               <dt className="text-xs text-ink-subtle">Coordinates</dt>
               <dd>
                 <a
-                  className="text-brand-700 hover:underline"
+                  className="text-brand-700 underline underline-offset-2"
                   href={`https://www.openstreetmap.org/?mlat=${s.latitude}&mlon=${s.longitude}#map=18/${s.latitude}/${s.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"

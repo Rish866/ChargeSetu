@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import type { Metadata } from "next";
+import { cache, Suspense } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,6 +20,7 @@ import {
   AvailabilityNotice,
   ConnectorBadges,
   DemoBadge,
+  FreshnessLine,
   PowerBadge,
   VerificationBadge,
 } from "@/components/stations/station-badges";
@@ -29,10 +31,29 @@ import { ButtonAnchor, ButtonLink } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isMapEnabled } from "@/lib/config";
-import { amenityLabel } from "@/lib/constants";
+import { amenityLabel, connectorLabel } from "@/lib/constants";
+import type { Station } from "@/lib/types";
 import { getStore } from "@/lib/data";
 import { directionsUrl, displayPrice, formatDate, formatKw, osmUrl } from "@/lib/format";
 import { t } from "@/lib/i18n";
+
+const loadStation = cache(async (id: string) => getStore().getPublishedStation(decodeURIComponent(id)));
+
+export async function generateMetadata({ params }: PageProps<"/stations/[id]">): Promise<Metadata> {
+  const { id } = await params;
+  const station = await loadStation(id);
+  if (!station) return { title: "Station not found", robots: { index: false } };
+  const title = `${station.name} — EV charging in ${station.area}, ${station.city}`;
+  const description = `${station.network} charging station at ${station.address}, ${station.area}, ${station.city}. Up to ${formatKw(station.powerKw)}; connectors: ${station.connectorTypes.map(connectorLabel).join(", ")}.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/stations/${station.slug}` },
+    openGraph: { title, description, type: "website" },
+    // Fictional demo listings should never be indexed.
+    robots: station.source === "demo" ? { index: false, follow: true } : undefined,
+  };
+}
 
 export default function StationPage({ params }: PageProps<"/stations/[id]">) {
   return (
@@ -42,7 +63,7 @@ export default function StationPage({ params }: PageProps<"/stations/[id]">) {
         {t.stations.backToList}
       </Link>
       <Suspense fallback={<DetailSkeleton />}>
-        <StationDetail params={params} />
+        <StationLoader params={params} />
       </Suspense>
     </>
   );
@@ -58,11 +79,18 @@ function DetailSkeleton() {
   );
 }
 
-async function StationDetail({ params }: { params: PageProps<"/stations/[id]">["params"] }) {
+/*
+ * Note: because the page shell streams first, a missing station renders the
+ * not-found UI with <meta name="robots" content="noindex"> but HTTP 200.
+ */
+async function StationLoader({ params }: { params: PageProps<"/stations/[id]">["params"] }) {
   const { id } = await params;
-  const station = await getStore().getPublishedStation(decodeURIComponent(id));
+  const station = await loadStation(id);
   if (!station) notFound();
+  return <StationDetail station={station} />;
+}
 
+function StationDetail({ station }: { station: Station }) {
   const price = displayPrice(station);
 
   return (
@@ -119,7 +147,9 @@ async function StationDetail({ params }: { params: PageProps<"/stations/[id]">["
                   {price ? (
                     <p className="font-semibold">{price}</p>
                   ) : (
-                    <p className="text-ink-muted">{t.stations.priceNotVerified}. Confirm with the operator.</p>
+                    <p className="font-medium text-amber-800">
+                      {t.stations.priceNotVerified}. Confirm the tariff with the operator before charging.
+                    </p>
                   )}
                   <p className="mt-1 text-xs text-ink-subtle">Prices in INR. GST and parking fees may apply.</p>
                 </Detail>
@@ -185,10 +215,7 @@ async function StationDetail({ params }: { params: PageProps<"/stations/[id]">["
                 <span className="text-ink-subtle">Verification: </span>
                 {station.verificationStatus === "verified" ? t.verification.verifiedHelp : t.verification.unverifiedHelp}
               </p>
-              <p>
-                <span className="text-ink-subtle">{t.stations.lastVerified}: </span>
-                {formatDate(station.lastVerifiedAt)}
-              </p>
+              <FreshnessLine station={station} />
               <p>
                 <span className="text-ink-subtle">{t.stations.lastUpdated}: </span>
                 {formatDate(station.updatedAt)}
