@@ -37,7 +37,8 @@ export function StationForm({
   reviewNotice = true,
 }: {
   action: Action;
-  station?: Station;
+  /** Saved station, or partial prefilled values (e.g. from an imported lead). */
+  station?: Partial<Station>;
   submitLabel: string;
   cancelHref: string;
   reviewNotice?: boolean;
@@ -134,7 +135,7 @@ export function StationForm({
           errors={e("connectorTypes")}
         />
         <div className="grid gap-4 sm:grid-cols-2">
-          <TextField label="Number of connectors" name="connectorCount" type="number" min={1} max={200} step={1} required inputMode="numeric" defaultValue={str("connectorCount", station?.connectorCount ?? 1)} errors={e("connectorCount")} />
+          <TextField label="Number of connectors" name="connectorCount" type="number" min={1} max={200} step={1} required inputMode="numeric" defaultValue={str("connectorCount", station ? station.connectorCount : 1)} errors={e("connectorCount")} />
           <TextField label="Maximum power (kW)" name="powerKw" type="number" min={1} max={1000} step="0.1" required inputMode="decimal" defaultValue={str("powerKw", station?.powerKw)} errors={e("powerKw")} hint="Highest output of any connector at this station" />
         </div>
       </Section>
@@ -172,7 +173,7 @@ export function StationForm({
           rows={3}
           placeholder={"https://example.com/photo-1.jpg\nhttps://example.com/photo-2.jpg"}
           hint="One https:// link per line, up to 6. Direct photo uploads are not available yet."
-          defaultValue={str("photoUrls", station?.photoUrls.join("\n"))}
+          defaultValue={str("photoUrls", station?.photoUrls?.join("\n"))}
           errors={e("photoUrls")}
         />
       </Section>

@@ -91,6 +91,42 @@ export interface DashboardCounts {
   verified: number;
   operators: number;
   openReports: number;
+  pendingLeads: number;
+}
+
+export type LeadStatus = "pending_review" | "converted" | "rejected" | "duplicate";
+
+/**
+ * A candidate station from a directory/article/operator site. Admin-only,
+ * never public, never verified. Missing values are null — never guessed.
+ */
+export interface StationLead {
+  id: string;
+  importBatch: string;
+  sourceRow: number | null;
+  stationName: string;
+  operatorName: string | null;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  connectorTypes: ConnectorTypeId[];
+  connectorTypesRaw: string | null;
+  powerKwMax: number | null;
+  powerKwRaw: string | null;
+  tariffInrPerKwh: number | null;
+  accessNotes: string | null;
+  sourceUrl: string;
+  notes: string | null;
+  missingFields: string[];
+  qualityFlags: string[];
+  status: LeadStatus;
+  stationId: string | null;
+  reviewNote: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /** Shared shape returned by form server actions (used with useActionState). */

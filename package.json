@@ -14,7 +14,8 @@
     "smoke": "ALLOW_DEMO_ROLES=true scripts/with-server.sh scripts/smoke.sh",
     "db:seed:generate": "node --no-warnings scripts/generate-seed-sql.mts",
     "test:e2e": "node e2e/demo.e2e.mjs",
-    "e2e": "npm run build && ALLOW_DEMO_ROLES=true scripts/with-server.sh npm run test:e2e"
+    "e2e": "npm run build && ALLOW_DEMO_ROLES=true scripts/with-server.sh npm run test:e2e",
+    "leads:import": "node --no-warnings scripts/import-station-leads.mts"
   },
   "engines": {
     "node": ">=20.9"
@@ -36,11 +37,13 @@
     "@tailwindcss/turbopack": "^4",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "axe-core": "^4.14.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "pg": "^8.23.1",
     "playwright": "^1.64.1",
     "tailwindcss": "^4",
     "typescript": "^5",

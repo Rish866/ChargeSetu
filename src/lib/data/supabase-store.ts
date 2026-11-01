@@ -3,9 +3,11 @@ import { slugify } from "@/lib/format";
 import { filterStations } from "@/lib/stations/search";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
+  LeadStatus,
   Report,
   ReportStatus,
   Station,
+  StationLead,
   StationSource,
   StationStatus,
   VerificationStatus,
@@ -56,6 +58,68 @@ interface ReportRow {
   status: string;
   created_at: string;
   stations?: { name: string } | null;
+}
+
+interface LeadRow {
+  id: string;
+  import_batch: string;
+  source_row: number | null;
+  station_name: string;
+  operator_name: string | null;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  connector_types: string[];
+  connector_types_raw: string | null;
+  power_kw_max: number | string | null;
+  power_kw_raw: string | null;
+  tariff_inr_per_kwh: number | string | null;
+  access_notes: string | null;
+  source_url: string;
+  notes: string | null;
+  missing_fields: string[];
+  quality_flags: string[];
+  status: string;
+  station_id: string | null;
+  review_note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const numOrNull = (v: number | string | null) => (v === null ? null : Number(v));
+
+function toLead(r: LeadRow): StationLead {
+  return {
+    id: r.id,
+    importBatch: r.import_batch,
+    sourceRow: r.source_row,
+    stationName: r.station_name,
+    operatorName: r.operator_name,
+    address: r.address,
+    city: r.city,
+    state: r.state,
+    pincode: r.pincode,
+    latitude: numOrNull(r.latitude),
+    longitude: numOrNull(r.longitude),
+    connectorTypes: (r.connector_types ?? []) as ConnectorTypeId[],
+    connectorTypesRaw: r.connector_types_raw,
+    powerKwMax: numOrNull(r.power_kw_max),
+    powerKwRaw: r.power_kw_raw,
+    tariffInrPerKwh: numOrNull(r.tariff_inr_per_kwh),
+    accessNotes: r.access_notes,
+    sourceUrl: r.source_url,
+    notes: r.notes,
+    missingFields: r.missing_fields ?? [],
+    qualityFlags: r.quality_flags ?? [],
+    status: r.status as LeadStatus,
+    stationId: r.station_id,
+    reviewNote: r.review_note,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -278,6 +342,34 @@ export const supabaseStore: DataStore = {
     }));
   },
 
+  async listLeads(status) {
+    const sb = await createSupabaseServerClient();
+    let q = sb.from("station_leads").select("*");
+    if (status) q = q.eq("status", status);
+    const { data, error } = await q.order("city").order("station_name").limit(MAX_ROWS);
+    if (error) fail("load station leads", error);
+    return (data as LeadRow[]).map(toLead);
+  },
+
+  async getLead(id) {
+    if (!UUID_RE.test(id)) return null;
+    const sb = await createSupabaseServerClient();
+    const { data, error } = await sb.from("station_leads").select("*").eq("id", id).maybeSingle();
+    if (error) fail("load the lead", error);
+    return data ? toLead(data as LeadRow) : null;
+  },
+
+  async updateLead(id, patch) {
+    const sb = await createSupabaseServerClient();
+    const row: Record<string, unknown> = {};
+    if (patch.status !== undefined) row.status = patch.status;
+    if (patch.reviewNote !== undefined) row.review_note = patch.reviewNote;
+    if (patch.stationId !== undefined) row.station_id = patch.stationId;
+    const { data, error } = await sb.from("station_leads").update(row).eq("id", id).select("*").maybeSingle();
+    if (error) fail("update the lead", error);
+    return data ? toLead(data as LeadRow) : null;
+  },
+
   async getCounts() {
     const sb = await createSupabaseServerClient();
     const countStations = async (filters: Record<string, string>) => {
@@ -287,7 +379,7 @@ export const supabaseStore: DataStore = {
       if (error) fail("count stations", error);
       return count ?? 0;
     };
-    const [published, pending, rejected, inactive, verified, ops, reports] = await Promise.all([
+    const [published, pending, rejected, inactive, verified, ops, reports, leads] = await Promise.all([
       countStations({ status: "published" }),
       countStations({ status: "pending_review" }),
       countStations({ status: "rejected" }),
@@ -295,6 +387,7 @@ export const supabaseStore: DataStore = {
       countStations({ status: "published", verification_status: "verified" }),
       sb.from("operators").select("id", { count: "exact", head: true }),
       sb.from("reports").select("id", { count: "exact", head: true }).eq("status", "open"),
+      sb.from("station_leads").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
     ]);
     if (ops.error) fail("count operators", ops.error);
     if (reports.error) fail("count reports", reports.error);
@@ -306,6 +399,8 @@ export const supabaseStore: DataStore = {
       verified,
       operators: ops.count ?? 0,
       openReports: reports.count ?? 0,
+      // The leads table may not exist yet on older databases — show 0 then.
+      pendingLeads: leads.error ? 0 : (leads.count ?? 0),
     };
   },
 

@@ -62,8 +62,16 @@ async function AdminDashboard({ searchParams }: { searchParams: PageProps<"/admi
     <div className="space-y-10">
       <PageHeader title={t.admin.title} description={`Signed in as ${user.name}${user.isDemo ? " (demo)" : ""}.`} />
       {sp.notice === "saved" && <Alert tone="success">Station details saved.</Alert>}
+      {counts.pendingLeads > 0 && (
+        <Alert tone="info" title={`${counts.pendingLeads} station lead${counts.pendingLeads === 1 ? "" : "s"} to review`}>
+          Imported candidate stations are private and unverified until you confirm them.{" "}
+          <Link href="/admin/leads" className="font-semibold underline underline-offset-2">
+            Review leads
+          </Link>
+        </Alert>
+      )}
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         {[
           ["Published", counts.published],
           ["Verified", counts.verified],
@@ -71,6 +79,7 @@ async function AdminDashboard({ searchParams }: { searchParams: PageProps<"/admi
           ["Rejected / inactive", counts.rejected + counts.inactive],
           ["Operators", counts.operators],
           ["Open reports", counts.openReports],
+          ["Leads to review", counts.pendingLeads],
         ].map(([label, n]) => (
           <Card key={label} className="p-4">
             <dt className="text-xs text-ink-subtle">{label}</dt>
