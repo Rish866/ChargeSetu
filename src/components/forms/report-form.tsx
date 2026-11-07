@@ -57,7 +57,7 @@ export function ReportForm({
         placeholder={t.report.chooseStation}
         defaultValue={v("stationId") ?? defaultStationId ?? ""}
         errors={e("stationId")}
-        options={stations.map((s) => ({ value: s.id, label: `${s.name} — ${s.city}` }))}
+        options={stations.map((s) => ({ value: s.id, label: s.city ? `${s.name} — ${s.city}` : s.name }))}
       />
       <SelectField
         label={t.report.issueType}

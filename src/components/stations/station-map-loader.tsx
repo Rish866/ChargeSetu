@@ -13,6 +13,11 @@ const StationMap = dynamic(() => import("./station-map"), {
   loading: () => <Skeleton className="h-[28rem] w-full rounded-2xl" />,
 });
 
+const ExplorerMap = dynamic(() => import("./explorer-map"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[32rem] w-full rounded-2xl" />,
+});
+
 /** If the map crashes (e.g. script blocked), show a notice instead of breaking the page. */
 class MapErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -36,6 +41,15 @@ export function StationMapLoader(props: {
   return (
     <MapErrorBoundary>
       <StationMap {...props} />
+    </MapErrorBoundary>
+  );
+}
+
+/** Nationwide map that loads clustered markers from /api/map as you pan and zoom. */
+export function ExplorerMapLoader(props: { query: string; userLocation?: { lat: number; lng: number } }) {
+  return (
+    <MapErrorBoundary>
+      <ExplorerMap {...props} />
     </MapErrorBoundary>
   );
 }

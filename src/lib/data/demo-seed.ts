@@ -40,6 +40,8 @@ export const demoOperators: Operator[] = [
 type SeedStation = Omit<
   Station,
   "country" | "source" | "createdAt" | "updatedAt" | "rejectionReason" | "photoUrls" | "contactEmail"
+  | "district" | "externalId" | "vehicleClasses" | "sourceUrl" | "sourceAttribution"
+  | "sourceDataAsOf" | "lastEvidenceCheck" | "locationQuality" | "nameIsDerived" | "dataQualityScore"
 > &
   Partial<Pick<Station, "rejectionReason" | "photoUrls" | "contactEmail" | "createdAt" | "updatedAt">>;
 
@@ -469,6 +471,16 @@ export const demoStations: Station[] = raw.map((s) => ({
   country: "India",
   source: "demo",
   contactEmail: null,
+  district: null,
+  externalId: null,
+  vehicleClasses: ["car"],
+  sourceUrl: null,
+  sourceAttribution: null,
+  sourceDataAsOf: null,
+  lastEvidenceCheck: null,
+  locationQuality: "ok",
+  nameIsDerived: false,
+  dataQualityScore: null,
   photoUrls: [],
   rejectionReason: null,
   createdAt: s.createdAt ?? "2026-06-01T09:00:00.000Z",

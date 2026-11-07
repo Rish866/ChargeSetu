@@ -52,6 +52,12 @@ every submission before it goes live.
 **Accounts:** email and password sign-up with email confirmation, sign-in, sign-out, forgot password
 (reset by email), and a required Terms/Privacy consent checkbox at sign-up.
 
+## Nationwide data (pan-India)
+
+ChargeSetu ships with a cleaned national list of 26,920 source-listed stations (BEE, 26 Oct 2025) that an admin imports and publishes
+state by state. They are always labelled "Source-listed · status unconfirmed" until verified. See [docs/NATIONWIDE.md](docs/NATIONWIDE.md)
+for the runbook, counts, licensing blockers and limits, and [data/README.md](data/README.md) for the datasets.
+
 ## Tech stack
 
 | Concern | Choice |

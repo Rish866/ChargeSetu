@@ -16,7 +16,9 @@ export type StationStatus =
 export type VerificationStatus = "unverified" | "verified";
 
 /** Where a station record came from. `demo` = fictional sample data. */
-export type StationSource = "operator" | "admin" | "community" | "demo";
+export type StationSource = "operator" | "admin" | "community" | "demo" | "bee" | "osm";
+export type VehicleClass = "car" | "two_three_wheeler";
+export type LocationQuality = "ok" | "suspect";
 
 export type ReportStatus = "open" | "resolved" | "dismissed";
 
@@ -28,18 +30,21 @@ export interface Station {
   /** Brand / charging network shown to drivers, e.g. "GreenPlug (Demo)". */
   network: string;
   address: string;
-  area: string;
+  /** Locality. Null when the source does not give one (never guessed). */
+  area: string | null;
+  district: string | null;
   city: string;
   state: string;
   country: string;
   latitude: number;
   longitude: number;
   connectorTypes: ConnectorTypeId[];
-  connectorCount: number;
-  powerKw: number;
+  /** Null = unknown. Unknown values are shown as "not provided", never invented. */
+  connectorCount: number | null;
+  powerKw: number | null;
   price: number | null;
   priceUnit: PriceUnitId;
-  openingHours: string;
+  openingHours: string | null;
   amenities: AmenityId[];
   contactPhone: string | null;
   contactEmail: string | null;
@@ -51,7 +56,82 @@ export interface Station {
   lastVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  // --- Provenance and freshness (imported / source-listed stations) ---
+  externalId: string | null;
+  vehicleClasses: VehicleClass[];
+  sourceUrl: string | null;
+  sourceAttribution: string | null;
+  sourceDataAsOf: string | null;
+  lastEvidenceCheck: string | null;
+  locationQuality: LocationQuality;
+  nameIsDerived: boolean;
+  dataQualityScore: number | null;
 }
+
+/** One group of identical connectors at a station. */
+export interface ChargingPoint {
+  standard: ConnectorTypeId;
+  current: "AC" | "DC";
+  powerKw: number | null;
+  connectorCount: number;
+  vehicleClasses: VehicleClass[];
+}
+
+export interface StateStat {
+  state: string;
+  total: number;
+  published: number;
+  hidden: number;
+  pending: number;
+  verified: number;
+  sourceListed: number;
+  suspect: number;
+}
+
+export interface MapPoint {
+  kind: "cluster" | "station";
+  lat: number;
+  lng: number;
+  count: number;
+  id?: string;
+  slug?: string;
+  name?: string;
+  powerKw?: number | null;
+  verified?: boolean;
+  vehicleClasses?: VehicleClass[];
+}
+
+export interface ImportBatch {
+  id: string;
+  source: string;
+  label: string;
+  status: "running" | "completed" | "failed";
+  total: number;
+  inserted: number;
+  skipped: number;
+  failed: number;
+  publishAs: "inactive" | "published";
+  startedAt: string;
+  finishedAt: string | null;
+}
+
+export type ClaimStatus = "pending" | "approved" | "rejected";
+export interface StationClaim {
+  id: string;
+  stationId: string;
+  stationName?: string;
+  claimantId: string;
+  companyName: string;
+  contactEmail: string;
+  contactPhone: string | null;
+  evidence: string;
+  status: ClaimStatus;
+  reviewNote: string | null;
+  createdAt: string;
+}
+
+/** How a station's information should be described to drivers. */
+export type ListingLevel = "verified" | "source_listed" | "submitted";
 
 export interface Operator {
   id: string;
@@ -92,6 +172,7 @@ export interface DashboardCounts {
   operators: number;
   openReports: number;
   pendingLeads: number;
+  pendingClaims: number;
 }
 
 export type LeadStatus = "pending_review" | "converted" | "rejected" | "duplicate";

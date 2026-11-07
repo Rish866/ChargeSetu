@@ -3,7 +3,7 @@ import { BadgeCheck, Check, Search } from "lucide-react";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { FiltersDisclosure } from "./filters-disclosure";
-import { CONNECTOR_TYPES, POWER_FILTERS } from "@/lib/constants";
+import { CONNECTOR_TYPES, INDIAN_STATES, POWER_FILTERS } from "@/lib/constants";
 import { t } from "@/lib/i18n";
 import { stationsHref, type StationFilters as Filters } from "@/lib/validation/filters";
 
@@ -17,7 +17,8 @@ function quickFilters(filters: Filters) {
     { label: "CCS2", active: filters.connector === "ccs2", next: { connector: filters.connector === "ccs2" ? undefined : ("ccs2" as const) } },
     { label: "Type 2", active: filters.connector === "type2", next: { connector: filters.connector === "type2" ? undefined : ("type2" as const) } },
     { label: "Fast 50 kW+", active: filters.minPower === 50, next: { minPower: filters.minPower === 50 ? undefined : 50 } },
-    { label: "2W / 3W", active: filters.connector === "15a_socket", next: { connector: filters.connector === "15a_socket" ? undefined : ("15a_socket" as const) } },
+    { label: "2W / 3W", active: filters.vehicle === "two_three_wheeler", next: { vehicle: filters.vehicle === "two_three_wheeler" ? undefined : ("two_three_wheeler" as const) } },
+    { label: "DC fast", active: filters.current === "DC", next: { current: filters.current === "DC" ? undefined : ("DC" as const) } },
   ];
 }
 
@@ -27,14 +28,12 @@ function quickFilters(filters: Filters) {
  */
 export function StationFilters({
   filters,
-  cities,
   networks,
 }: {
   filters: Filters;
-  cities: string[];
   networks: string[];
 }) {
-  const activeCount = [filters.city, filters.connector, filters.minPower, filters.network, filters.verified].filter(Boolean).length;
+  const activeCount = [filters.state, filters.vehicle, filters.current, filters.city, filters.connector, filters.minPower, filters.network, filters.verified].filter(Boolean).length;
 
   return (
     <div className="space-y-3">
@@ -64,18 +63,30 @@ export function StationFilters({
         </div>
 
         <FiltersDisclosure activeCount={activeCount}>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
             <div className="space-y-1">
-              <label htmlFor="city" className="text-xs font-medium text-ink-muted">
-                {t.filters.city}
-              </label>
-              <select id="city" name="city" defaultValue={filters.city ?? ""} className={selectClass}>
-                <option value="">{t.filters.anyCity}</option>
-                {cities.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+              <label htmlFor="state" className="text-xs font-medium text-ink-muted">State / UT</label>
+              <select id="state" name="state" defaultValue={filters.state ?? ""} className={selectClass}>
+                <option value="">All of India</option>
+                {INDIAN_STATES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
                 ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="vehicle" className="text-xs font-medium text-ink-muted">Vehicle</label>
+              <select id="vehicle" name="vehicle" defaultValue={filters.vehicle ?? ""} className={selectClass}>
+                <option value="">Any vehicle</option>
+                <option value="car">Car</option>
+                <option value="two_three_wheeler">Two / three-wheeler</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="current" className="text-xs font-medium text-ink-muted">AC / DC</label>
+              <select id="current" name="current" defaultValue={filters.current ?? ""} className={selectClass}>
+                <option value="">AC or DC</option>
+                <option value="AC">AC (slow)</option>
+                <option value="DC">DC (fast)</option>
               </select>
             </div>
             <div className="space-y-1">
@@ -138,7 +149,7 @@ export function StationFilters({
           {quickFilters(filters).map((qf) => (
             <li key={qf.label}>
               <Link
-                href={stationsHref({ ...filters, ...qf.next })}
+                href={stationsHref({ ...filters, ...qf.next, page: undefined })}
                 className={cn(
                   "inline-flex h-9 items-center gap-1 rounded-full px-3.5 text-sm font-medium ring-1 ring-inset",
                   qf.active ? "bg-brand-700 text-white ring-brand-700" : "bg-white text-ink ring-line hover:bg-gray-50",

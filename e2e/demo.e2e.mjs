@@ -54,11 +54,22 @@ try {
   await page.goto(`${BASE}/stations`);
   await page.waitForSelector("text=14 stations found");
   await a11y("stations list");
-  await page.selectOption("#city", "Mumbai");
-  await page.selectOption("#connector", "ccs2");
-  await page.click("text=Apply filters");
+  await page.goto(`${BASE}/stations?city=Mumbai&connector=ccs2`);
   await page.waitForSelector("text=2 stations found");
   ok("filters: Mumbai + CCS2 = 2", true);
+
+  // New nationwide filters (state / AC-DC / vehicle) via the form.
+  await page.goto(`${BASE}/stations`);
+  await page.waitForSelector("text=14 stations found");
+  await page.selectOption("#state", "Maharashtra");
+  await page.selectOption("#current", "DC");
+  await page.click("text=Apply filters");
+  await page.waitForURL(/state=Maharashtra/);
+  await page.waitForSelector("text=/\\d+ stations? found/");
+  ok("filters: state + DC applied via form", page.url().includes("current=DC"));
+  await page.goto(`${BASE}/stations?state=Kerala`);
+  await page.waitForSelector("text=No stations match your filters");
+  ok("filters: empty state shows message", true);
 
   await page.goto(`${BASE}/stations`);
   await page.click("nav[aria-label='Quick filters'] >> text=Verified only");
@@ -70,7 +81,14 @@ try {
   await page.goto(`${BASE}/stations?view=map`);
   await page.waitForSelector(".leaflet-container", { timeout: 15000 });
   await page.waitForTimeout(1000);
-  ok("map renders markers", (await page.locator(".leaflet-interactive").count()) >= 10);
+  await page.waitForResponse((r) => r.url().includes("/api/map") && r.status() === 200, { timeout: 15000 }).catch(() => null);
+  await page.waitForTimeout(1500);
+  ok("map renders clustered markers from /api/map", (await page.locator(".leaflet-marker-icon, .leaflet-interactive").count()) >= 1);
+  const apiRes = await page.request.get(`${BASE}/api/map?minLat=6&maxLat=37&minLng=68&maxLng=97&zoom=5`);
+  const apiJson = await apiRes.json();
+  ok("api/map returns points", apiRes.status() === 200 && Array.isArray(apiJson.points) && apiJson.points.length >= 1);
+  const bad = await page.request.get(`${BASE}/api/map?minLat=abc`);
+  ok("api/map rejects bad input", bad.status() === 400);
 
   await page.goto(`${BASE}/stations?q=zzzz-nothing`);
   await page.waitForSelector("text=No stations match");
@@ -127,9 +145,9 @@ try {
   await mp.waitForSelector("text=14 stations found");
   ok("mobile: bottom nav", await mp.locator("nav[aria-label=Main]").last().isVisible());
   ok("mobile: quick filters visible", await mp.locator("nav[aria-label='Quick filters']").isVisible());
-  ok("mobile: filters collapsed", !(await mp.locator("#city").isVisible()));
+  ok("mobile: filters collapsed", !(await mp.locator("#state").isVisible()));
   await mp.click("button:has-text('Filters')");
-  ok("mobile: filters expand", await mp.locator("#city").isVisible());
+  ok("mobile: filters expand", await mp.locator("#state").isVisible());
   const overflow = await mp.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   ok("mobile: no horizontal page scroll", overflow <= 1, `${overflow}px`);
   await mobile.close();
@@ -294,6 +312,77 @@ try {
   await page.waitForURL((u) => u.pathname === "/admin/leads");
   await page.waitForSelector("text=You don't have access");
   ok("leads: operator blocked", (await page.locator("text=VoltYatra Thane").count()) === 0);
+
+  // ---- Nationwide import (real bundled BEE data, Goa only) ----
+  await page.goto(`${BASE}/login?next=/admin/data`);
+  await page.click("text=Continue as admin");
+  await page.waitForURL((u) => u.pathname === "/admin/data");
+  await page.waitForSelector("text=Import and publish");
+  await a11y("admin data");
+  await page.selectOption("select >> nth=0", "Goa");
+  await page.click("button:has-text('Import from BEE list')");
+  await page.waitForSelector("text=/Finished: 142 added, 0 already existed/", { timeout: 60000 });
+  ok("import: Goa 142 stations added", true);
+  await page.click("button:has-text('Import from BEE list')");
+  await page.waitForSelector("text=/Finished: 0 added, 142 already existed/", { timeout: 60000 });
+  ok("import: re-run is idempotent", true);
+  await page.goto(`${BASE}/stations?state=Goa`);
+  await page.waitForSelector("text=No stations match your filters");
+  ok("import: hidden by default (not public)", true);
+  await page.goto(`${BASE}/admin/data`);
+  await page.selectOption("select >> nth=0", "Goa");
+  await page.click("button:has-text('Publish imported')");
+  await page.waitForSelector("text=/Published 142 stations \\(Goa\\)/", { timeout: 60000 });
+  ok("import: Goa published", true);
+  await page.goto(`${BASE}/stations?state=Goa`);
+  await page.waitForSelector("text=142 stations found");
+  await a11y("stations: source-listed");
+  ok("directory: 24 per page with pagination", (await page.locator("main li >> text=Source-listed").count()) === 24 && (await page.locator("nav[aria-label='Pagination']").count()) === 1);
+  await page.goto(`${BASE}/stations?state=Goa&page=2`);
+  await page.waitForSelector("text=Page 2 of 6");
+  ok("directory: page 2 works", true);
+  await page.goto(`${BASE}/stations?state=Goa&q=bicholim`);
+  await page.waitForSelector("text=/\\d+ stations? found/");
+  await page.locator("main li a:has-text('Bpcl')").first().click();
+  await page.waitForSelector("text=Operational status not confirmed");
+  ok("detail: shows unconfirmed-status banner", true);
+  await page.waitForSelector("h2:has-text('Charging points')", { timeout: 10000 });
+  await page.waitForSelector("text=Bureau of Energy Efficiency", { timeout: 10000 });
+  ok("detail: unknown hours shown honestly", (await page.locator("text=Not provided by source").count()) >= 1);
+  ok("detail: charging points table", (await page.locator("h2:has-text('Charging points')").count()) === 1);
+  ok("detail: attribution to BEE", (await page.locator("text=Bureau of Energy Efficiency").count()) >= 1);
+  const detailUrl = page.url();
+
+  // Hiding demo data is refused until a lot of real stations are live
+  await page.goto(`${BASE}/admin/data`);
+  await page.fill("input[aria-label='Type HIDE DEMO to confirm']", "HIDE DEMO");
+  await page.click("button:has-text('Hide demo stations')");
+  await page.waitForSelector("text=/Refused: fewer than 500/");
+  ok("demo hide refused while real data is small", true);
+  const backup = await page.request.get(`${BASE}/admin/data/demo-backup`);
+  ok("demo backup downloadable by admin", backup.status() === 200 && (await backup.text()).includes("GreenPlug"));
+
+  // Operator claims a source-listed station; admin reviews it
+  await page.goto(`${BASE}/login?next=${encodeURIComponent(new URL(detailUrl).pathname + "/claim")}`);
+  await page.click("text=Continue as operator");
+  await page.waitForSelector("text=Claim this station");
+  await page.fill("#f-evidence", "Our company runs this BPCL outlet under a dealer agreement.");
+  await page.click("button:has-text('Submit claim')");
+  await page.waitForSelector("text=Claim received");
+  ok("claim: operator submitted", true);
+  await page.goto(`${BASE}/login?next=/admin/claims`);
+  await page.click("text=Continue as admin");
+  await page.waitForSelector("text=dealer agreement");
+  await page.click("button:has-text('Approve')");
+  await page.waitForSelector("text=No claims waiting");
+  ok("claim: admin approved", true);
+  const anon = await (await browser.newContext()).newPage();
+  const dataRes = await anon.goto(`${BASE}/admin/data`);
+  ok("admin/data hidden from visitors", (await anon.locator("text=Sign in").count()) > 0 && (await anon.locator("text=State dashboard").count()) === 0, String(dataRes?.status()));
+  const anonBackup = await anon.request.get(`${BASE}/admin/data/demo-backup`);
+  ok("demo backup forbidden to visitors", anonBackup.status() === 403);
+  const anonClaim = await anon.goto(`${BASE}/stations/nonexistent/claim`);
+  ok("claim page for missing station is a not-found page", (await anon.locator("text=/not found/i").count()) > 0, String(anonClaim?.status()));
 } catch (err) {
   results.push(`FAIL exception at ${page.url()}: ${err.message.split("\n")[0]}`);
   const shot = process.env.E2E_FAILURE_SCREENSHOT ?? "e2e-failure.png";

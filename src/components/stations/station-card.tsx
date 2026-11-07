@@ -11,6 +11,7 @@ import {
   DemoBadge,
   FreshnessLine,
   PowerBadge,
+  VehicleBadges,
   VerificationBadge,
 } from "./station-badges";
 
@@ -41,7 +42,13 @@ export function StationCard({ station }: { station: StationWithDistance }) {
           <p className="mt-1 flex items-start gap-1.5 text-sm text-ink-muted">
             <MapPin aria-hidden className="mt-0.5 size-4 shrink-0" />
             <span>
-              {station.address}, <span className="font-medium text-ink">{station.area}</span>, {station.city}
+              {station.address}
+              {station.area && (
+                <>
+                  , <span className="font-medium text-ink">{station.area}</span>
+                </>
+              )}
+              , {station.city}
             </span>
           </p>
         </div>
@@ -50,6 +57,7 @@ export function StationCard({ station }: { station: StationWithDistance }) {
           <PowerBadge kw={station.powerKw} />
         </div>
         <ConnectorBadges connectors={station.connectorTypes} />
+        <VehicleBadges classes={station.vehicleClasses} />
 
         <dl className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center gap-1.5">
@@ -60,7 +68,7 @@ export function StationCard({ station }: { station: StationWithDistance }) {
           <div className="flex items-center gap-1.5">
             <dt className="sr-only">{t.stations.hours}</dt>
             <Clock aria-hidden className="size-4 text-ink-subtle" />
-            <dd className="truncate">{station.openingHours}</dd>
+            <dd className="truncate">{station.openingHours ?? "Hours not provided"}</dd>
           </div>
         </dl>
 

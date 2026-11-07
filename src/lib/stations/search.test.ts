@@ -80,3 +80,23 @@ describe("filterOptions", () => {
     expect(cities).not.toContain("Thane"); // only the rejected listing is in Thane
   });
 });
+
+describe("nationwide filters", () => {
+  const base = published[0];
+  const mk = (over: Partial<typeof base>) => ({ ...base, id: crypto.randomUUID(), status: "published" as const, ...over });
+  const pool = [
+    mk({ state: "Kerala", vehicleClasses: ["car"], connectorTypes: ["ccs2"], powerKw: 60 }),
+    mk({ state: "Kerala", vehicleClasses: ["two_three_wheeler"], connectorTypes: ["lev_ac"], powerKw: 3.3 }),
+    mk({ state: "Goa", vehicleClasses: ["car", "two_three_wheeler"], connectorTypes: ["type2"], powerKw: null }),
+  ];
+  it("filters by state, vehicle and AC/DC", () => {
+    expect(filterStations(pool, { state: "kerala" })).toHaveLength(2);
+    expect(filterStations(pool, { vehicle: "two_three_wheeler" })).toHaveLength(2);
+    expect(filterStations(pool, { current: "DC" })).toHaveLength(1);
+    expect(filterStations(pool, { current: "AC", state: "Goa" })).toHaveLength(1);
+  });
+  it("excludes stations with unknown power when a minimum power is requested", () => {
+    expect(filterStations(pool, { minPower: 1 }).every((s) => s.powerKw !== null)).toBe(true);
+    expect(filterStations(pool, {})).toHaveLength(3);
+  });
+});
