@@ -1,0 +1,1465 @@
+{
+  "researchedOn": "2026-11-07",
+  "standard": "A station is only 'verified' when ChargeSetu's review team has confirmed it with the operator or on site. Online listings, news and directories are evidence of existence, not of current operation. Nothing here is marked verified, and nothing here is published.",
+  "limits": [
+    "Operator apps and locators (Jio-bp, Tata Power EZ Charge, Bolt.Earth, GoGreen, GreenShift) cannot be read by automated tools, so station-level operator confirmation was not possible for those networks.",
+    "Tesla and PlugShare pages blocked automated access; only their search-result text was seen.",
+    "Google Maps was not accessible. OpenStreetMap has only 9 charging points in the Mumbai / Navi Mumbai area searched and none lists connectors or hours.",
+    "NITI Aayog's E-Amrit station database was not used because its owner asks for prior permission before use.",
+    "Ather's PDF and the MSEDCL article are undated; neither proves a charger works today."
+  ],
+  "summary": {
+    "leadsChecked": 44,
+    "listedByOperator": 4,
+    "corroboratedBySecondarySource": 13,
+    "needsCorrection": 4,
+    "restrictedAccess": 1,
+    "noEvidenceFound": 22,
+    "confirmedOperationalAndPublic": 0,
+    "eligibleToPublishNow": 0,
+    "published": 0,
+    "duplicates": 0
+  },
+  "entries": [
+    {
+      "sourceRow": 2,
+      "stationName": "ChargeZone – Four Points by Sheraton",
+      "operator": "ChargeZone",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://navimumbai.com/ev-charging-stations-navi-mumbai/",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Crowdsourced listing + open map data; operator site checked",
+      "individuallySearched": true,
+      "findings": "A crowdsourced listing agrees with the lead (ChargeZone, 60 kW) but ChargeZone's own site does not list it. Hotel access for non-guests is unconfirmed.",
+      "evidence": [
+        {
+          "url": "https://www.plugshare.com/location/574774",
+          "kind": "crowdsourced",
+          "note": "PlugShare listing titled 'Four Points By Sheraton - ChargeZone FC (60kW)' (seen in search results; page blocks automated access)"
+        },
+        {
+          "url": "https://www.openstreetmap.org/?mlat=19.0662937&mlon=72.9996924#map=17/19.0662937/72.9996924",
+          "kind": "open_map_data",
+          "note": "Hotel premises coordinates from OpenStreetMap (hotel location, not the charger bay)"
+        },
+        {
+          "url": "https://ev-stations.chargezone.co.in/",
+          "kind": "checked_not_found",
+          "note": "ChargeZone's own public station site lists only Nerul and BKC for this area — this hotel is not on it"
+        }
+      ],
+      "coordinates": {
+        "latitude": 19.0662937,
+        "longitude": 72.9996924,
+        "source": "OpenStreetMap geocode of the hotel",
+        "precision": "premises_only"
+      },
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 3,
+      "stationName": "ChargeZone – Marriott Executive Apartments",
+      "operator": "ChargeZone",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://findevchargingstation.com/charging-stations-in/navi-mumbai/",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Operator site checked; web search",
+      "individuallySearched": true,
+      "findings": "No independent source found. Likely a hotel/guest charger; public access unconfirmed.",
+      "evidence": [
+        {
+          "url": "https://ev-stations.chargezone.co.in/",
+          "kind": "checked_not_found",
+          "note": "Not on ChargeZone's public station site"
+        },
+        {
+          "url": "https://www.marriott.com/es/destinations/india/navi-mumbai/ev-charging-hotels.mi",
+          "kind": "checked_not_found",
+          "note": "Marriott lists EV charging at 'a variety of' Navi Mumbai hotels but does not name this one"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 4,
+      "stationName": "ChargeZone – Ibis Navi Mumbai",
+      "operator": "ChargeZone",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://findevchargingstation.com/charging-stations-in/navi-mumbai/",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Operator site checked; web search",
+      "individuallySearched": true,
+      "findings": "No independent source found. Hotel premises; public access unconfirmed.",
+      "evidence": [
+        {
+          "url": "https://ev-stations.chargezone.co.in/",
+          "kind": "checked_not_found",
+          "note": "Not on ChargeZone's public station site"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 5,
+      "stationName": "ChargeZone – Shiravane / Fortune Cars",
+      "operator": "ChargeZone",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.zigwheels.com/electric-charging-station/Navi-Mumbai",
+      "decision": "listed_by_operator",
+      "decisionLabel": "Listed by the operator itself — details and current status still unconfirmed",
+      "method": "Operator's public station page",
+      "individuallySearched": true,
+      "findings": "ChargeZone publishes this Nerul station with coordinates. The page does not state connectors, power, hours or number of chargers for this specific site, and does not mention 'Shiravane' or 'Fortune Cars'.",
+      "evidence": [
+        {
+          "url": "https://ev-stations.chargezone.co.in/near-me/navi-mumbai/nerul/chargezone-charging-station-in-nerul-navi-mumbai--4QFGRL/home",
+          "kind": "operator_official",
+          "note": "ChargeZone page 'Charging Station, Nerul': MIDC Industrial Area, Nerul, Navi Mumbai 400706; helpline 1800 121 2025; map coordinates published; 31 customer reviews, latest dated 26-08-2026"
+        }
+      ],
+      "coordinates": {
+        "latitude": 19.0485332,
+        "longitude": 73.03206902,
+        "source": "ChargeZone's own station page",
+        "precision": "operator_published"
+      },
+      "corrections": [
+        "Name: the operator calls it 'ChargeZone Charging Station, Nerul (MIDC Industrial Area)'. Confirm that the lead's 'Shiravane / Fortune Cars' label is the same site."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 6,
+      "stationName": "Tata Power – The Park Hotel",
+      "operator": "Tata Power EZ Charge",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://xprest.tatamotors.com/electric/chargingpoint",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "The Park Navi Mumbai hotel exists, but no source shows a Tata Power charger there.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 7,
+      "stationName": "Jio-bp pulse – Little World Mall",
+      "operator": "Jio-bp pulse",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://findevchargingstation.com/charging-stations-in/navi-mumbai/",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "Only aggregator directories mention it; Jio-bp's station locator is an app that automated tools cannot read.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [
+        "Several power values are listed (60; 30 kW). Highest stored as max — confirm which connector is which."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 8,
+      "stationName": "Jio-bp pulse – Palm Beach Road, Sanpada",
+      "operator": "Jio-bp pulse",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://findevchargingstation.com/charging-stations-in/navi-mumbai/",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "No independent source found.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 9,
+      "stationName": "Jio-bp pulse – Nexus Seawoods",
+      "operator": "Jio-bp pulse",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://findevchargingstation.com/charging-stations-in/navi-mumbai/",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "No Jio-bp source found. The mall does host Tesla chargers (a different network — see row 29); keep the two listings separate.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 10,
+      "stationName": "Jio-bp pulse – Rohinjan, Taloja",
+      "operator": "Jio-bp pulse",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.zigwheels.com/electric-charging-station/Navi-Mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "No station-level source found.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 11,
+      "stationName": "Jio-bp pulse – Turbhe / Fern Residency",
+      "operator": "Jio-bp pulse",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://voltika.app/charging-stations/navi-mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "The Fern Residency Turbhe exists; no source shows a charger there.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 12,
+      "stationName": "Ather Grid – Hotel Redwings Castle",
+      "operator": "Ather Grid",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.zigwheels.com/electric-charging-station/Navi-Mumbai",
+      "decision": "listed_by_operator",
+      "decisionLabel": "Listed by the operator itself — details and current status still unconfirmed",
+      "method": "Operator's own published list (PDF)",
+      "individuallySearched": true,
+      "findings": "Listed by Ather. The list is undated; Ather does not state kW, charger count or hours.",
+      "evidence": [
+        {
+          "url": "https://assets.atherenergy.com/grid_charging_stations.pdf",
+          "kind": "operator_official",
+          "note": "Ather Grid list entry #722: 'HOTEL REDWINGS CASTLE', near Orion Mall / New Panvel Bridge, Old Mumbai-Pune Expy, PIN 410206"
+        },
+        {
+          "url": "https://www.atherenergy.com/blog/ather-grid-fast-charging-electric-scooters-india",
+          "kind": "operator_official",
+          "note": "Ather Grid uses the LECCS connector"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Connector is Ather's LECCS (light-EV) plug, not Type 2 — Ather states Ather Grid is built on LECCS. Use connector type LECCS (2W/3W).",
+        "Address is in Panvel; the CSV filed it under Navi Mumbai. Confirm which city to show."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 13,
+      "stationName": "Ather Grid – Aaditya Innovations, Rabale",
+      "operator": "Ather Grid",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://ecogears.in/ev-charging-stations-in-maharashtra/",
+      "decision": "listed_by_operator",
+      "decisionLabel": "Listed by the operator itself — details and current status still unconfirmed",
+      "method": "Operator's own published list (PDF)",
+      "individuallySearched": true,
+      "findings": "Address matches the lead exactly. The list is undated. The lead's '3.3 kW' comes from a directory, not from Ather.",
+      "evidence": [
+        {
+          "url": "https://assets.atherenergy.com/grid_charging_stations.pdf",
+          "kind": "operator_official",
+          "note": "Ather Grid list entry #602: 'Aaditya Innovations', R43 Sector 8, Rabale MIDC Rd, Navi Mumbai 400701"
+        },
+        {
+          "url": "https://www.atherenergy.com/blog/ather-grid-fast-charging-electric-scooters-india",
+          "kind": "operator_official",
+          "note": "Ather Grid uses the LECCS connector"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Connector is Ather's LECCS (light-EV) plug, not Type 2 — Ather states Ather Grid is built on LECCS. Use connector type LECCS (2W/3W)."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 14,
+      "stationName": "Ather Grid – Sakal Bhavan, Belapur",
+      "operator": "Ather Grid",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://ecogears.in/ev-charging-stations-in-maharashtra/",
+      "decision": "needs_correction",
+      "decisionLabel": "Cited sources contradict the lead — correct before use",
+      "method": "Operator's own published list (PDF) — not found",
+      "individuallySearched": true,
+      "findings": "Not in Ather's own list, so it may be outdated or removed. Do not publish until Ather or the site confirms.",
+      "evidence": [
+        {
+          "url": "https://assets.atherenergy.com/grid_charging_stations.pdf",
+          "kind": "checked_not_found",
+          "note": "No Sakal Bhavan / CBD Belapur entry in Ather's 1,000+ entry list"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Connector is Ather's LECCS (light-EV) plug, not Type 2 — Ather states Ather Grid is built on LECCS. Use connector type LECCS (2W/3W).",
+        "Not in Ather's official list — confirm it exists."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 15,
+      "stationName": "Ather Grid – Seawoods Railway Station",
+      "operator": "Ather Grid",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://ecogears.in/ev-charging-stations-in-maharashtra/",
+      "decision": "needs_correction",
+      "decisionLabel": "Cited sources contradict the lead — correct before use",
+      "method": "Operator's own published list (PDF) — not found",
+      "individuallySearched": true,
+      "findings": "Not in Ather's own list, so it may be outdated or removed. Do not publish until confirmed.",
+      "evidence": [
+        {
+          "url": "https://assets.atherenergy.com/grid_charging_stations.pdf",
+          "kind": "checked_not_found",
+          "note": "No Seawoods Railway Station entry in Ather's list"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Connector is Ather's LECCS (light-EV) plug, not Type 2 — Ather states Ather Grid is built on LECCS. Use connector type LECCS (2W/3W).",
+        "Not in Ather's official list — confirm it exists."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 16,
+      "stationName": "Greenshift – W-223 Kopar Khairane",
+      "operator": "GreenShift Initiatives",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://voltika.app/charging-stations/navi-mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "A GreenShift app exists, but no station listing for this site was found.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [
+        "Several power values listed (60; 22; 7 kW). Highest stored as max."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 17,
+      "stationName": "Go Green – API House, Belapur",
+      "operator": "Go Green",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://voltika.app/charging-stations/navi-mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "A GoGreen Charging app exists, but nothing places a charger at this address.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 18,
+      "stationName": "EV Dock – Seawoods",
+      "operator": "EV Dock",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://voltika.app/charging-stations/navi-mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "No source found.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 19,
+      "stationName": "Bolt.Earth – R K Motors, Airoli",
+      "operator": "Bolt.Earth",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://ecogears.in/ev-charging-stations-in-maharashtra/",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "Bolt.Earth chargers are listed only inside its app; no public station page found.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 20,
+      "stationName": "Bolt.Earth – Hotel Runway Plaza, Kharghar",
+      "operator": "Bolt.Earth",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://voltika.app/charging-stations/navi-mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "Bolt.Earth chargers are listed only inside its app; no public station page found.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 21,
+      "stationName": "Tata Power – Next MGL CNG, Kamothe",
+      "operator": "Tata Power EZ Charge",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://voltika.app/charging-stations/navi-mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "Only aggregator directories list it, and they do not name the operator.",
+      "evidence": [
+        {
+          "url": "https://www.cardekho.com/electric-charging-station/panvel",
+          "kind": "directory",
+          "note": "CarDekho directory lists 'Next MGL CNG Station' at the same address (does not name Tata Power)"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Address is in Panvel; the CSV filed it under Navi Mumbai. Confirm which city to show."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 22,
+      "stationName": "E-Fill – New Panvel East",
+      "operator": "E-Fill",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://voltika.app/charging-stations/navi-mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "Searches returned only unrelated E-Fill businesses abroad.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [
+        "Address is in Panvel; the CSV filed it under Navi Mumbai. Confirm which city to show."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 23,
+      "stationName": "MSEDCL – Vashi Sector 15",
+      "operator": "MSEDCL / PowerUp",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+      "decision": "needs_correction",
+      "decisionLabel": "Cited sources contradict the lead — correct before use",
+      "method": "Dated news article",
+      "individuallySearched": true,
+      "findings": "The cited article has no Vashi Sector 15 station, so the location may be mislabelled (it may be Airoli or Belapur Sector 15, or Vashi Sector 30).",
+      "evidence": [
+        {
+          "url": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+          "kind": "news",
+          "note": "Mumbai Live lists MSEDCL's 12 stations: Sector 30 near Vashi station, Sector 19E near Galleria Mall (Vashi), Sector 15 Airoli, Sector 15 CBD Belapur, etc. — no 'Vashi Sector 15'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Location not supported by the cited source — find the correct site before using."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 24,
+      "stationName": "MSEDCL – Galleria Mall / Vashi",
+      "operator": "MSEDCL / PowerUp",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Dated news article",
+      "individuallySearched": true,
+      "findings": "Site confirmed by the article. Current status, kW and number of chargers are not given. MSEDCL's PowerUp app is its own locator.",
+      "evidence": [
+        {
+          "url": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+          "kind": "news",
+          "note": "Mumbai Live: MSEDCL station at 'Sector 19E near Galleria Mall in Vashi' (undated article, c. 2022; says stations 'became operational')"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 25,
+      "stationName": "MSEDCL – Nerul Sector 30",
+      "operator": "MSEDCL / PowerUp",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+      "decision": "needs_correction",
+      "decisionLabel": "Cited sources contradict the lead — correct before use",
+      "method": "Dated news article",
+      "individuallySearched": true,
+      "findings": "The lead says Nerul Sector 30 'opposite Nerul Gymkhana', which the article does not support.",
+      "evidence": [
+        {
+          "url": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+          "kind": "news",
+          "note": "The article's 'Sector 30' station is 'near Vashi railway station'; its Nerul station is 'Sector 9, Palm Beach Road'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Source says Sector 30 is near Vashi railway station (not Nerul). Re-check the location."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 26,
+      "stationName": "MSEDCL – Tapal Naka, Panvel",
+      "operator": "MSEDCL / PowerUp",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Dated news article",
+      "individuallySearched": true,
+      "findings": "Site confirmed by the article (c. 2022). Current status unknown.",
+      "evidence": [
+        {
+          "url": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+          "kind": "news",
+          "note": "Mumbai Live: MSEDCL station at 'Tapal Naka in Panvel-Uran road'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Address is in Panvel; the CSV filed it under Navi Mumbai. Confirm which city to show."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 27,
+      "stationName": "MSEDCL – Rabale MIDC Sector 8",
+      "operator": "MSEDCL / PowerUp",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.zigwheels.com/electric-charging-station/Navi-Mumbai",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Dated news article",
+      "individuallySearched": true,
+      "findings": "Site confirmed by the article (c. 2022). Current status unknown.",
+      "evidence": [
+        {
+          "url": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+          "kind": "news",
+          "note": "Mumbai Live: MSEDCL station at 'Sector 8 in Rabale MIDC'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 28,
+      "stationName": "MSEDCL – Airoli Sector 15",
+      "operator": "MSEDCL / PowerUp",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Dated news article",
+      "individuallySearched": true,
+      "findings": "Site confirmed by the article (c. 2022). Current status unknown.",
+      "evidence": [
+        {
+          "url": "https://www.mumbailive.com/en/civic/navi-mumbai-mahavitaran-sets-up-12-charging-stations-for-electric-vehicle-76672",
+          "kind": "news",
+          "note": "Mumbai Live: MSEDCL station at 'Sector 15 in Airoli'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 29,
+      "stationName": "Tesla Destination Charging – Nexus Seawoods",
+      "operator": "Tesla",
+      "city": "Navi Mumbai",
+      "leadSourceUrl": "https://www.tesla.com/findus/list/chargers/India",
+      "decision": "restricted_access",
+      "decisionLabel": "Exists but not shown as open to all EVs",
+      "method": "Operator listing (search snippets) + news",
+      "individuallySearched": true,
+      "findings": "The station exists (opened 6 April 2026) but reports describe it as for Tesla owners. Not shown as open to all EVs until Tesla confirms.",
+      "evidence": [
+        {
+          "url": "https://www.tesla.com/es_PR/findus/location/charger/463456",
+          "kind": "operator_official",
+          "note": "Tesla find-us listing (seen in search results; page blocks automated access): Nexus Seawoods Mall, 1 Seawoods Station Rd, Navi Mumbai 400706; 4 chargers; available 24/7; parking fees apply"
+        },
+        {
+          "url": "https://www.moneycontrol.com/automobile/tesla-adds-first-in-mall-charging-hub-in-india-as-ev-network-expands-article-13881297.html",
+          "kind": "news",
+          "note": "Eight chargers: four V4 Superchargers (up to 250 kW DC) and four Destination Chargers (11 kW AC)"
+        },
+        {
+          "url": "https://www.ndtv.com/auto/tesla-india-opens-first-in-mall-charging-station-in-navi-mumbai-with-four-v4-superchargers-11318439",
+          "kind": "news",
+          "note": "Opened as 'eight charging points for Tesla owners'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "confirmation it is open to non-Tesla EVs",
+        "charger-level coordinates",
+        "connector type confirmation"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 30,
+      "stationName": "Tata Power – BKC Substation",
+      "operator": "Tata Power EZ Charge",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://xprest.tatamotors.com/electric/chargingpoint",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "Only a 2018 plan found, no confirmation it was built.",
+      "evidence": [
+        {
+          "url": "https://www.thehindu.com/news/cities/mumbai/tata-power-sets-up-ev-charging-stations-in-two-mumbai-malls/article22399967.ece",
+          "kind": "news",
+          "note": "2018 report only says Tata Power 'plans' a BKC station"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 31,
+      "stationName": "Tata Power – Bombay House, Fort",
+      "operator": "Tata Power EZ Charge",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://xprest.tatamotors.com/electric/chargingpoint",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "Tata Power launched its EZ Charge card at Bombay House (an event), but nothing shows a public charger there. Office premises.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 32,
+      "stationName": "Tata Power – Palladium, Lower Parel",
+      "operator": "Tata Power EZ Charge",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://xprest.tatamotors.com/electric/chargingpoint",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Dated news (several outlets)",
+      "individuallySearched": true,
+      "findings": "Reported opened in 2018 by several outlets. Eight years old: current status unknown.",
+      "evidence": [
+        {
+          "url": "https://www.thehindu.com/news/cities/mumbai/tata-power-sets-up-ev-charging-stations-in-two-mumbai-malls/article22399967.ece",
+          "kind": "news",
+          "note": "The Hindu (Jan 2018): Tata Power set up charging at Palladium Mall, Lower Parel"
+        },
+        {
+          "url": "https://www.team-bhp.com/news/tata-power-opens-ev-charging-points-lower-parel-kurla",
+          "kind": "news",
+          "note": "Team-BHP (2018): Tata Power opened charging at Palladium Mall, Lower Parel"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 33,
+      "stationName": "Tata Power – Malad Receiving Station",
+      "operator": "Tata Power EZ Charge",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://xprest.tatamotors.com/electric/chargingpoint",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "No source found.",
+      "evidence": [],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 34,
+      "stationName": "Tata Power – Borivali Receiving Station",
+      "operator": "Tata Power EZ Charge",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://xprest.tatamotors.com/electric/chargingpoint",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "Only a 2018 plan found.",
+      "evidence": [
+        {
+          "url": "https://www.thehindu.com/news/cities/mumbai/tata-power-sets-up-ev-charging-stations-in-two-mumbai-malls/article22399967.ece",
+          "kind": "news",
+          "note": "2018 report only says a Borivali (Western Express Highway) station was planned"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 35,
+      "stationName": "Tata Power – Vikhroli Substation",
+      "operator": "Tata Power EZ Charge",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://xprest.tatamotors.com/electric/chargingpoint",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Dated news",
+      "individuallySearched": true,
+      "findings": "A Tata Power station in Vikhroli is reported (2018). The exact site and current status are unconfirmed.",
+      "evidence": [
+        {
+          "url": "https://www.team-bhp.com/news/tata-power-opens-ev-charging-points-lower-parel-kurla",
+          "kind": "news",
+          "note": "Team-BHP (2018): 'Mumbai's first electric vehicle charging station in Vikhroli' by Tata Power"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 36,
+      "stationName": "Jio-bp pulse – Maker Maxity, BKC",
+      "operator": "Jio-bp pulse",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://www.dekhoev.com/electric-car-charging-station-in-mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "No Jio-bp charger found at Maker Maxity.",
+      "evidence": [
+        {
+          "url": "https://www.teslaoracle.com/2025/08/04/tesla-india-opens-first-supercharger-in-mumbai-charging-costs-idle-fees/",
+          "kind": "news",
+          "note": "Maker Maxity BKC hosts a Tesla Experience Center and Supercharger — a different operator"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 37,
+      "stationName": "Jio-bp pulse – Bandra Bus Station East",
+      "operator": "Jio-bp pulse",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://findevchargingstation.com/jio-bp-pulse-charging-station-in-mumbai/",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Organisation list + news",
+      "individuallySearched": true,
+      "findings": "Site named by a second organisation. Whether cars can use a BEST bus-station charger is unconfirmed.",
+      "evidence": [
+        {
+          "url": "https://smalltrucks.tatamotors.com/ev-charging-stations",
+          "kind": "organisation_list",
+          "note": "Tata Motors' EV charging list names 'Bandra Bus station East, behind Om Sai Krupa Bldg ... Anant Kanekar Marg' (JioBp)"
+        },
+        {
+          "url": "https://indianexpress.com/article/cities/mumbai/best-introduce-ev-charging-station-march-8455707/",
+          "kind": "news",
+          "note": "Feb 2023: BEST's own charging stations 'not open for public or private EV users'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Several power values listed (60; 30; 22 kW). Highest stored as max."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 38,
+      "stationName": "Jio-bp pulse – Worli Bus Depot",
+      "operator": "Jio-bp pulse",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://findevchargingstation.com/jio-bp-pulse-charging-station-in-mumbai/",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Organisation list + news",
+      "individuallySearched": true,
+      "findings": "Site named by a second organisation. Public access for cars is unconfirmed.",
+      "evidence": [
+        {
+          "url": "https://smalltrucks.tatamotors.com/ev-charging-stations",
+          "kind": "organisation_list",
+          "note": "Tata Motors list names 'Worli Bus Depot, Sasmira Rd' (JioBp)"
+        },
+        {
+          "url": "https://www.thehindu.com/news/cities/mumbai/best-bus-depots-to-have-electric-car-charging-points/article23764648.ece",
+          "kind": "news",
+          "note": "2018: BEST planned car charging at Backbay and Worli depots"
+        },
+        {
+          "url": "https://indianexpress.com/article/cities/mumbai/best-introduce-ev-charging-station-march-8455707/",
+          "kind": "news",
+          "note": "Feb 2023: BEST's own stations 'not open for public'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Several power values listed (60; 30; 22 kW). Highest stored as max."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 39,
+      "stationName": "Jio-bp pulse – NSCI Bus Stand, Worli",
+      "operator": "Jio-bp pulse",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://findevchargingstation.com/jio-bp-pulse-charging-station-in-mumbai/",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search; Tata Motors list checked",
+      "individuallySearched": true,
+      "findings": "Only the original directories mention it.",
+      "evidence": [
+        {
+          "url": "https://smalltrucks.tatamotors.com/ev-charging-stations",
+          "kind": "checked_not_found",
+          "note": "NSCI Bus Stand is not on Tata Motors' list (the other BEST sites are)"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Several power values listed (80; 30; 22 kW). Highest stored as max."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 40,
+      "stationName": "Jio-bp pulse – Walkeshwar BEST Depot",
+      "operator": "Jio-bp pulse",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://smalltrucks.tatamotors.com/ev-charging-stations",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Organisation list + news",
+      "individuallySearched": true,
+      "findings": "Site named by a second organisation. Public access for cars is unconfirmed.",
+      "evidence": [
+        {
+          "url": "https://smalltrucks.tatamotors.com/ev-charging-stations",
+          "kind": "organisation_list",
+          "note": "Tata Motors list names 'Walkeshwar Bus Depot (BEST), Walkeshwar Rd, Teen Batti' (JioBp)"
+        },
+        {
+          "url": "https://indianexpress.com/article/cities/mumbai/best-introduce-ev-charging-station-march-8455707/",
+          "kind": "news",
+          "note": "Feb 2023: BEST's own stations 'not open for public'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 41,
+      "stationName": "Jio-bp pulse – Mantralaya Bus Station",
+      "operator": "Jio-bp pulse",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://smalltrucks.tatamotors.com/ev-charging-stations",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Organisation list + news",
+      "individuallySearched": true,
+      "findings": "Site named by a second organisation. Public access for cars is unconfirmed.",
+      "evidence": [
+        {
+          "url": "https://smalltrucks.tatamotors.com/ev-charging-stations",
+          "kind": "organisation_list",
+          "note": "Tata Motors list names 'Mantralaya Bus Station, Jamshedji Tata Road, Nariman Point' (JioBp)"
+        },
+        {
+          "url": "https://indianexpress.com/article/cities/mumbai/best-introduce-ev-charging-station-march-8455707/",
+          "kind": "news",
+          "note": "Feb 2023: BEST's own stations 'not open for public'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 42,
+      "stationName": "Jio-bp pulse – Hiranandani Bus Depot, Powai",
+      "operator": "Jio-bp pulse",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://smalltrucks.tatamotors.com/ev-charging-stations",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Organisation list + news",
+      "individuallySearched": true,
+      "findings": "Site named by a second organisation. Public access for cars is unconfirmed.",
+      "evidence": [
+        {
+          "url": "https://smalltrucks.tatamotors.com/ev-charging-stations",
+          "kind": "organisation_list",
+          "note": "Tata Motors list names 'Hiranandani Bus Depot, Jalvayu Vihar, Powai' (JioBp)"
+        },
+        {
+          "url": "https://indianexpress.com/article/cities/mumbai/best-introduce-ev-charging-station-march-8455707/",
+          "kind": "news",
+          "note": "Feb 2023: BEST's own stations 'not open for public'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 43,
+      "stationName": "Ather Grid – Vasant Oasis, Marol",
+      "operator": "Ather Grid",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://www.dekhoev.com/electric-car-charging-station-in-mumbai",
+      "decision": "listed_by_operator",
+      "decisionLabel": "Listed by the operator itself — details and current status still unconfirmed",
+      "method": "Operator's own published list (PDF)",
+      "individuallySearched": true,
+      "findings": "Listed by Ather. The list is undated; no kW, charger count or hours given.",
+      "evidence": [
+        {
+          "url": "https://assets.atherenergy.com/grid_charging_stations.pdf",
+          "kind": "operator_official",
+          "note": "Ather Grid list entry #321: 'MCGM Parking || Vasant oasis', Borosil Plot, off Makwana Rd, Marol, Andheri East, PIN 400059"
+        },
+        {
+          "url": "https://www.atherenergy.com/blog/ather-grid-fast-charging-electric-scooters-india",
+          "kind": "operator_official",
+          "note": "Ather Grid uses the LECCS connector"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Connector is Ather's LECCS (light-EV) plug, not Type 2 — Ather states Ather Grid is built on LECCS. Use connector type LECCS (2W/3W)."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 44,
+      "stationName": "EV-Cosmos – Hotel VITS",
+      "operator": "EV-Cosmos",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://www.dekhoev.com/electric-car-charging-station-in-mumbai",
+      "decision": "no_evidence_found",
+      "decisionLabel": "No independent evidence found",
+      "method": "Web search",
+      "individuallySearched": true,
+      "findings": "No EV-Cosmos charger found. The hotel appears to have been renamed.",
+      "evidence": [
+        {
+          "url": "https://vits.mumbaitophotels.com/",
+          "kind": "directory",
+          "note": "A hotel site shows the former Hotel VITS now trades as 'Ira by Orchid Mumbai T-2' (name may have changed)"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [
+        "Hotel name may have changed from 'Hotel VITS'."
+      ],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    },
+    {
+      "sourceRow": 45,
+      "stationName": "Tata Power – CSMT",
+      "operator": "Tata Power EZ Charge",
+      "city": "Mumbai",
+      "leadSourceUrl": "https://xprest.tatamotors.com/electric/chargingpoint",
+      "decision": "corroborated_secondary",
+      "decisionLabel": "Outside source agrees — access and current status unconfirmed",
+      "method": "Authoritative organisation (UNEP) + news",
+      "individuallySearched": true,
+      "findings": "Installation reported in 2021 with a pay-per-use model for EV owners. Current status unknown.",
+      "evidence": [
+        {
+          "url": "http://www.unep.org/es/node/28853",
+          "kind": "organisation_list",
+          "note": "UNEP/Central Railway (2021): 'An EV charging station has been installed at CSMT in partnership with Tata Power and UNEP'"
+        }
+      ],
+      "coordinates": null,
+      "corrections": [],
+      "missingBeforePublication": [
+        "charger-level coordinates",
+        "number of charging points",
+        "opening hours",
+        "current operating status",
+        "public access confirmed",
+        "power (kW)",
+        "tariff"
+      ],
+      "verificationStatus": "unverified",
+      "publication": "not_published_private_lead"
+    }
+  ]
+}
