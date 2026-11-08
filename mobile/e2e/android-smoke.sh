@@ -10,7 +10,7 @@ mkdir -p android-screens
 pass=0; fail=0; n=0
 ok()   { echo "ok   $1"; pass=$((pass+1)); }
 bad()  { echo "FAIL $1"; fail=$((fail+1)); }
-shot() { n=$((n+1)); adb exec-out screencap -p > "android-screens/$(printf %02d $n)-$1.png" 2>/dev/null || true; }
+shot() { n=$((n+1)); local name; name=$(echo "$1" | tr -c 'A-Za-z0-9' '-' | tr -s '-' | cut -c1-60); adb exec-out screencap -p > "android-screens/$(printf %02d $n)-${name}.png" 2>/dev/null || true; }
 dump() { adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb shell cat /sdcard/ui.xml 2>/dev/null; }
 waitfor() { # waitfor <regex> <seconds>
   local end=$((SECONDS + ${2:-45}))
@@ -68,16 +68,18 @@ else bad "directions: a result to open"; fi
 
 # Location: "Stations near me"
 adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.MainActivity >/dev/null
-waitfor "Charge with confidence|Stations near me" 90
-geo
-if tap "Stations near me|मेरे पास"; then
+waitfor "Stations near me|मेरे पास के स्टेशन" 120
+sleep 3; geo
+if tap "Stations near me|मेरे पास के स्टेशन"; then
   geo
   geo
   check "location: stations sorted by distance" "Sorted by distance|km away|दूरी के क्रम" 75
 else bad "location: 'Stations near me' button"; fi
 
 # Map (from the stations list)
-tap "^(Find stations|Stations)$" || true
+adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.MainActivity >/dev/null
+waitfor "Charge with confidence|भरोसे" 120
+tap "^(Find stations|Stations|स्टेशन खोजें)$" || true
 waitfor "stations? found|Charging stations" 45
 if tap "^Map$|Map view|^नक्शा$"; then
   check "map renders" "Leaflet|Tap a number|Loading stations|No stations in this view|OpenStreetMap" 60
