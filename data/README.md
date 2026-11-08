@@ -5,14 +5,14 @@ Station-level files are **kept private** (not committed) because the BEE station
 | File | Committed? | Contents |
 |---|---|---|
 | `india_ev_charging_raw.csv` | No — private | Every record as downloaded (BEE + OSM), 31,637 rows |
-| `india_ev_charging_clean.csv` | No — private | Cleaned, de-duplicated records with publication eligibility (B / C), 27,436 rows |
+| `india_ev_charging_clean.csv` | No — private | Cleaned, de-duplicated records with publication eligibility, 27,436 rows: 26,621 BEE level B, 414 BEE level C (115 suspect coordinates, 299 unreadable text), 401 OSM leads (C) |
 | `india_ev_charging_rejected.csv` | No — private | Rows merged away as duplicates, with the reason, 2,361 rows |
 | `india_ev_charging_sources.csv` | Yes | Source / licence manifest (no station records) |
 | `../docs/data/coverage-by-state.csv` | Yes | Aggregate counts per state / UT |
 | `../docs/data/etl-summary.json` | Yes | Aggregate ETL counts |
 
 Regenerate the private files with the scripts in `scripts/etl` (see docs/NATIONWIDE.md). The admin imports
-`india_ev_charging_clean.csv` by uploading it on `/admin/data`; only `source = bee` rows with coordinates inside India are imported.
+`india_ev_charging_clean.csv` by uploading it on `/admin/data`; only `source = bee`, level-B rows with readable text and coordinates inside India are imported.
 
 ## Licensing
 

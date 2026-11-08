@@ -132,13 +132,13 @@ export function ImportPanel({ states }: { states: string[] }) {
           className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:font-semibold file:text-brand-800"
         />
         <p className="text-xs text-ink-muted">
-          The file is read in your browser and sent in validated chunks. It is not stored by the app. Only BEE rows with coordinates inside
-          India are imported; OSM leads are skipped.
+          The file is read in your browser and sent in validated chunks. It is not stored by the app. Only level-B BEE rows (readable, located
+          inside India) are imported; level C and OSM leads stay private.
         </p>
         {parsed && (
           <p className="text-sm" aria-live="polite">
             <strong>{parsed.rows.length.toLocaleString("en-IN")}</strong> importable stations in {parsed.byState.size} states / UTs
-            {parsed.skippedRows > 0 && ` · ${parsed.skippedRows.toLocaleString("en-IN")} rows skipped (OSM leads or coordinates outside India)`}
+            {parsed.skippedRows > 0 && ` · ${parsed.skippedRows.toLocaleString("en-IN")} rows skipped (OSM leads, level C — e.g. suspect location or unreadable text — or outside India)`}
           </p>
         )}
       </div>

@@ -5,6 +5,7 @@
  * Rules: never invent data. Unknown stays empty. Everything uncertain is flagged.
  */
 import { INDIA_BOUNDS, INDIAN_STATES } from "../constants.ts";
+import { UNREADABLE_FLAG, unreadableFields } from "./text-quality.ts";
 
 export interface BeeGun {
   standard: string;
@@ -227,8 +228,18 @@ export function cleanBeeStation(s: MergedStation, opts: { retrievedAt: string; t
   const today = opts.today ?? new Date();
   const ageDays = (today.getTime() - new Date(SOURCE_BEE.publicationDate).getTime()) / 86400000;
   if (ageDays > 365) flags.push("source_older_than_12_months");
+  // Garbled PDF text: keep the original, but never make it publishable.
+  const unreadable = unreadableFields({
+    station_name: derivedName(s.operator, s.city ?? "", s.district ?? ""),
+    operator: tidy(s.operator),
+    district: tidy(s.district),
+    city: tidy(s.city),
+    address: tidy(s.address),
+  });
+  if (unreadable.length) flags.push(`${UNREADABLE_FLAG}:${unreadable.join("+")}`);
 
-  const eligible = s.location_quality === "ok" && inIndia(s.latitude, s.longitude) && tidy(s.address).length >= 3;
+  const eligible =
+    s.location_quality === "ok" && inIndia(s.latitude, s.longitude) && tidy(s.address).length >= 3 && unreadable.length === 0;
   const hasAc = s.standards.some((x) => !DC_STANDARDS.has(x));
   const hasDc = s.standards.some((x) => DC_STANDARDS.has(x));
   // Stable order (Car first) so the same set always prints the same way.
@@ -265,11 +276,13 @@ export function cleanBeeStation(s: MergedStation, opts: { retrievedAt: string; t
       verification_method: "source_list_only",
       verification_status: "unverified",
       publication_eligibility: eligible ? "B" : "C",
-      data_quality_score: String(qualityScore(s, flags)),
+      data_quality_score: String(unreadable.length ? Math.min(qualityScore(s, flags), 20) : qualityScore(s, flags)),
       merged_source_ids: s.mergedFrom.join("; "),
       flags: flags.join("; "),
       license: "No licence published by BEE; republished with attribution",
-      notes: "",
+      notes: unreadable.length
+        ? `Private: ${unreadable.join(", ")} unreadable in the source (PDF text-encoding error). Original text kept unchanged; correct manually before any use.`
+        : "",
     },
   };
 }

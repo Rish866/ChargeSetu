@@ -1,6 +1,7 @@
 import { slugify } from "@/lib/format";
 import { BEE_STANDARD_TO_APP } from "./bee";
 import { connectorCurrent } from "@/lib/constants";
+import { unreadableFields } from "./text-quality";
 
 export interface ImportPoint {
   standard: string;
@@ -89,6 +90,10 @@ export function parseConnectorsDetail(detail: string, vehicleClasses: string[]):
 /** Converts one row of the clean CSV into a database import row. Returns null for rows that must not be imported. */
 export function cleanRowToImport(r: Record<string, string>): ImportRow | null {
   if (r.source !== "bee" || !r.source_id) return null;
+  // Only level-B rows are importable. Level C (suspect location, unreadable text, …) stays private in the file.
+  if (r.publication_eligibility !== "B") return null;
+  // Belt and braces for files produced before the unreadable-text check existed.
+  if (unreadableFields(r).length > 0) return null;
   const lat = numOrNull(r.latitude);
   const lng = numOrNull(r.longitude);
   if (lat === null || lng === null) return null;
@@ -126,7 +131,7 @@ export function cleanRowToImport(r: Record<string, string>): ImportRow | null {
     name_is_derived: r.name_is_derived === "yes",
     data_quality_score: numOrNull(r.data_quality_score),
     merged_source_ids: r.merged_source_ids ? r.merged_source_ids.split(";").map((s) => s.trim()).filter(Boolean) : [],
-    eligibility: suspect || r.publication_eligibility !== "B" ? "C" : "B",
+    eligibility: suspect ? "C" : "B",
     points,
   };
 }

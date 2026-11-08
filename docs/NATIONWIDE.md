@@ -18,7 +18,7 @@ This document is the runbook and honest status report for the nationwide data la
 |---|---|---|
 | A | Operator-confirmed / admin-verified (`verification_status = verified`) | Public, "Verified" badge |
 | B | Source-listed: from the BEE list, location and address present. Shown as **"Source-listed · status unconfirmed"** | Public after an admin publishes it |
-| C | Private lead (suspect coordinates, OSM-only leads) | Never public |
+| C | Private (suspect coordinates, **unreadable text from the source PDF**, OSM-only leads) | Never imported, never public |
 | D | Rejected / duplicate | Not imported |
 
 Nothing is published automatically. The import creates stations **hidden**; an admin publishes per state or for all.
@@ -27,13 +27,16 @@ Nothing is published automatically. The import creates stations **hidden**; an a
 
 * BEE downloaded: **29,184** of 29,184 expected, 29,184 unique ids
 * Merged as same-operator duplicates (<30 m): **2,149** → **27,035** clean stations
-* Level B (importable and publishable): **26,920**
-* Level C — source coordinates are outside India (e.g. latitude typed into the longitude field): **115**. They are **not** imported and **not** "corrected"; they stay in the CSV for manual follow-up
+* Level B (importable; publishable only once reuse is permitted): **26,621**
+* Level C (private, not importable): **414**
+  * **115** — source coordinates outside India (e.g. latitude typed into the longitude field). Not "corrected" by guessing.
+  * **299** — unreadable text in the source (PDF text-encoding errors in the address, district, city or derived name; flag `unreadable_text_in_source:<fields>`). The original text is kept unchanged in the private files so it can be corrected by hand later. Detection: `src/lib/etl/text-quality.ts` (control characters, replacement/private-use glyphs, Latin-Extended/IPA/Greek/Cyrillic mojibake, letters shifted by one such as `B@MF@KNQD`). Native Indian scripts on their own are not flagged.
+  * Version history: the first build (v1) marked all 26,920 located rows level B; the 299 unreadable rows were reclassified in v2. v1 files are archived privately and unchanged.
 * OSM: 613 elements → 212 within 75 m of a BEE station (duplicates), **401 private leads**; OSM data is never published or imported (ODbL share-alike, thin data)
 * Operator-verified: **0** new (no station has been physically or operator-verified by this work)
 * Pre-existing: 44 private Mumbai/Navi Mumbai leads, 17 fictional demo stations
 
-The database import was tested end-to-end against a real Postgres engine (PGlite, all migrations): all 26,920 level-B rows import in 54 chunks of 500, a second run inserts 0, and bulk publish never publishes a suspect location (`tests/db/real-dataset.test.ts`).
+The database import was tested end-to-end against a real Postgres engine (PGlite, all migrations): all 26,621 level-B rows import in chunks, a second run inserts 0, and bulk publish never publishes a suspect location (`tests/db/real-dataset.test.ts`). Level-C rows are rejected three times over: the admin screen drops them, the server rejects any row that is not level B / has unreadable text, and the database refuses to publish suspect locations.
 
 ## Running it in production (admin steps)
 

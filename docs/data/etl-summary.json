@@ -9,8 +9,12 @@
     "mergedAwayDuplicates": 2149,
     "rejected": 0,
     "cleanStations": 27035,
-    "eligibleB": 26920,
-    "privateC": 115
+    "eligibleB": 26621,
+    "privateC": 414,
+    "privateCReasons": {
+      "suspectCoordinates": 115,
+      "unreadableText": 299
+    }
   },
   "osm": {
     "elementsDownloaded": 613,
@@ -22,8 +26,8 @@
     "rawRows": 31637,
     "cleanRows": 27436,
     "rejectedRows": 2361,
-    "eligibleB": 26920,
-    "privateC": 516
+    "eligibleB": 26621,
+    "privateC": 815
   },
   "statesWithNoRecords": []
 }
