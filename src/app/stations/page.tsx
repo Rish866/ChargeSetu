@@ -5,8 +5,7 @@ import { List, Map as MapIcon, SearchX, X } from "lucide-react";
 import { NearMeButton } from "@/components/stations/near-me-button";
 import { StationCard } from "@/components/stations/station-card";
 import { StationFilters } from "@/components/stations/station-filters";
-import { StationMapLoader } from "@/components/stations/station-map-loader";
-import { toMapStation } from "@/components/stations/to-map-station";
+import { ExplorerMapLoader } from "@/components/stations/station-map-loader";
 import { Alert } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -17,6 +16,8 @@ import { isMapEnabled } from "@/lib/config";
 import { getStore } from "@/lib/data";
 import { t } from "@/lib/i18n";
 import { parseStationFilters, stationsHref, type StationFilters as Filters } from "@/lib/validation/filters";
+
+const PAGE_SIZE = 24;
 
 export const metadata: Metadata = {
   title: "Find charging stations",
@@ -37,7 +38,10 @@ export default function StationsPage({ searchParams }: PageProps<"/stations">) {
 async function StationResults({ searchParams }: { searchParams: PageProps<"/stations">["searchParams"] }) {
   const filters = parseStationFilters(await searchParams);
   const store = getStore();
-  const [stations, options] = await Promise.all([store.listPublishedStations(filters), store.getFilterOptions()]);
+  const page = filters.page ?? 1;
+  const [result, options] = await Promise.all([store.searchStations(filters, page, PAGE_SIZE), store.getFilterOptions()]);
+  const stations = result.items;
+  const totalPages = Math.max(1, Math.ceil(result.total / PAGE_SIZE));
 
   const mapEnabled = isMapEnabled();
   const view = mapEnabled && filters.view === "map" ? "map" : "list";
@@ -45,12 +49,12 @@ async function StationResults({ searchParams }: { searchParams: PageProps<"/stat
 
   return (
     <div className="space-y-5">
-      <StationFilters filters={filters} cities={options.cities} networks={options.networks} />
+      <StationFilters filters={filters} networks={options.networks} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-sm font-medium" aria-live="polite">
-            {t.stations.resultsCount(stations.length)}
+            {t.stations.resultsCount(result.total)}
           </p>
           {userLocation && (
             <Link
@@ -81,7 +85,7 @@ async function StationResults({ searchParams }: { searchParams: PageProps<"/stat
       ) : (
         <>
           {view === "map" && (
-            <StationMapLoader stations={stations.map(toMapStation)} userLocation={userLocation} />
+            <ExplorerMapLoader query={mapQuery(filters)} userLocation={userLocation} />
           )}
           <ul className={cn("grid gap-4", view === "map" ? "md:grid-cols-3" : "md:grid-cols-2 lg:grid-cols-3")}>
             {stations.map((s) => (
@@ -90,6 +94,7 @@ async function StationResults({ searchParams }: { searchParams: PageProps<"/stat
               </li>
             ))}
           </ul>
+          <Pagination filters={filters} page={page} totalPages={totalPages} />
         </>
       )}
 
@@ -100,6 +105,36 @@ async function StationResults({ searchParams }: { searchParams: PageProps<"/stat
         </div>
       )}
     </div>
+  );
+}
+
+function mapQuery(f: Filters): string {
+  const sp = new URLSearchParams();
+  for (const k of ["q", "state", "vehicle", "current", "connector", "minPower", "network", "verified"] as const) {
+    const v = f[k];
+    if (v !== undefined && v !== "") sp.set(k, String(v));
+  }
+  return sp.toString();
+}
+
+function Pagination({ filters, page, totalPages }: { filters: Filters; page: number; totalPages: number }) {
+  if (totalPages <= 1) return null;
+  const link = (p: number, label: string, disabled: boolean) =>
+    disabled ? (
+      <span className="inline-flex h-10 items-center rounded-xl px-4 text-sm text-ink-subtle">{label}</span>
+    ) : (
+      <Link href={stationsHref({ ...filters, page: p })} className="inline-flex h-10 items-center rounded-xl border border-line bg-white px-4 text-sm font-medium hover:bg-gray-50">
+        {label}
+      </Link>
+    );
+  return (
+    <nav aria-label="Pagination" className="flex items-center justify-between gap-3">
+      {link(page - 1, "← Previous", page <= 1)}
+      <p className="text-sm text-ink-muted">
+        Page {page.toLocaleString("en-IN")} of {totalPages.toLocaleString("en-IN")}
+      </p>
+      {link(page + 1, "Next →", page >= totalPages)}
+    </nav>
   );
 }
 

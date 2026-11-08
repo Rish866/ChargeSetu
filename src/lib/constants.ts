@@ -12,6 +12,9 @@ export const CONNECTOR_TYPES = [
   { id: "bharat_dc001", label: "Bharat DC-001", current: "DC" },
   { id: "type7_lecct", label: "Type 7 / LECCS (2W/3W)", current: "DC" },
   { id: "15a_socket", label: "15A socket (2W/3W)", current: "AC" },
+  // BEE "Light EV" charge points (two- and three-wheelers only).
+  { id: "lev_ac", label: "Light EV AC (2W/3W)", current: "AC" },
+  { id: "lev_dc", label: "Light EV DC (2W/3W)", current: "DC" },
 ] as const;
 
 export type ConnectorTypeId = (typeof CONNECTOR_TYPES)[number]["id"];

@@ -13,10 +13,11 @@ import { SubmitButton } from "@/components/ui/form";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/lib/auth/session";
-import { INDIAN_STATES } from "@/lib/constants";
 import { getStore } from "@/lib/data";
 import { isAdmin } from "@/lib/stations/moderation";
-import type { Station, StationLead } from "@/lib/types";
+import { ResearchPanel } from "@/components/admin/research-panel";
+import { buildStationPrefill, findResearch } from "@/lib/leads/research";
+import { researchDate, researchEntries } from "@/lib/leads/research-data";
 
 export const metadata: Metadata = { title: "Review lead", robots: { index: false } };
 
@@ -30,30 +31,12 @@ export default function LeadPage({ params }: PageProps<"/admin/leads/[id]">) {
   );
 }
 
-/** Only values the lead actually has. Everything else stays blank. */
-function prefill(lead: StationLead): Partial<Station> {
-  const state = INDIAN_STATES.find((s) => s === lead.state);
-  return {
-    name: lead.stationName,
-    network: lead.operatorName ?? undefined,
-    address: lead.address,
-    city: lead.city,
-    state,
-    latitude: lead.latitude ?? undefined,
-    longitude: lead.longitude ?? undefined,
-    connectorTypes: lead.connectorTypes,
-    powerKw: lead.powerKwMax ?? undefined,
-    price: lead.tariffInrPerKwh ?? undefined,
-    priceUnit: "per_kwh",
-    amenities: [],
-  } as Partial<Station>;
-}
-
 async function LeadReview({ params }: { params: PageProps<"/admin/leads/[id]">["params"] }) {
   const [{ id }, user] = await Promise.all([params, getCurrentUser()]);
   if (!isAdmin(user)) return <AccessDenied user={user} required="admin" next={`/admin/leads/${id}`} />;
   const lead = await getStore().getLead(id);
   if (!lead) notFound();
+  const research = findResearch(researchEntries, lead);
 
   return (
     <div className="space-y-6">
@@ -66,6 +49,8 @@ async function LeadReview({ params }: { params: PageProps<"/admin/leads/[id]">["
           <LeadSummary lead={lead} />
         </CardBody>
       </Card>
+
+      {research && <ResearchPanel research={research} date={researchDate} />}
 
       {lead.status !== "pending_review" ? (
         <Alert tone="info">This lead has already been handled.</Alert>
@@ -92,7 +77,7 @@ async function LeadReview({ params }: { params: PageProps<"/admin/leads/[id]">["
               )}
               <StationForm
                 action={convertLeadAction.bind(null, lead.id)}
-                station={prefill(lead)}
+                station={buildStationPrefill(lead, research)}
                 submitLabel="Create station (pending review)"
                 cancelHref="/admin/leads"
                 reviewNotice={false}

@@ -64,6 +64,15 @@ export default function HomePage() {
         </ul>
       </section>
 
+      <section aria-labelledby="states-heading">
+        <h2 id="states-heading" className="mb-4 text-xl font-semibold">
+          Browse by state
+        </h2>
+        <Suspense fallback={<StationListSkeleton count={1} />}>
+          <StateBrowser />
+        </Suspense>
+      </section>
+
       <section aria-labelledby="featured-heading">
         <div className="mb-4 flex items-end justify-between gap-4">
           <h2 id="featured-heading" className="text-xl font-semibold">
@@ -128,6 +137,31 @@ async function RecentlyVerified() {
       {stations.map((s) => (
         <li key={s.id}>
           <StationCard station={s} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+async function StateBrowser() {
+  let stats: Awaited<ReturnType<ReturnType<typeof getStore>["stateStats"]>> = [];
+  try {
+    stats = (await getStore().stateStats()).filter((s) => s.published > 0);
+  } catch {
+    return null; // the directory still works without this section
+  }
+  if (stats.length === 0) return <p className="text-sm text-ink-muted">Search above to find stations.</p>;
+  return (
+    <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+      {stats.map((s) => (
+        <li key={s.state}>
+          <Link
+            href={stationsHref({ state: s.state })}
+            className="flex items-center justify-between gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-sm hover:border-brand-300 hover:bg-brand-50"
+          >
+            <span className="font-medium">{s.state}</span>
+            <span className="text-xs text-ink-subtle">{s.published.toLocaleString("en-IN")}</span>
+          </Link>
         </li>
       ))}
     </ul>

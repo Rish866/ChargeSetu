@@ -1,4 +1,5 @@
 import type { StationFilters } from "@/lib/validation/filters";
+import { connectorCurrent } from "@/lib/constants";
 import type { Station } from "@/lib/types";
 
 export interface StationWithDistance extends Station {
@@ -48,8 +49,11 @@ export function filterStations(
     if (filters.q && !matchesQuery(s, filters.q)) return false;
     if (filters.city && norm(s.city) !== norm(filters.city)) return false;
     if (filters.network && norm(s.network) !== norm(filters.network)) return false;
+    if (filters.state && norm(s.state) !== norm(filters.state)) return false;
+    if (filters.vehicle && !s.vehicleClasses.includes(filters.vehicle)) return false;
+    if (filters.current && !s.connectorTypes.some((c) => connectorCurrent(c) === filters.current)) return false;
     if (filters.connector && !s.connectorTypes.includes(filters.connector)) return false;
-    if (filters.minPower && s.powerKw < filters.minPower) return false;
+    if (filters.minPower && (s.powerKw === null || s.powerKw < filters.minPower)) return false;
     if (filters.verified && s.verificationStatus !== "verified") return false;
     return true;
   });
@@ -67,7 +71,7 @@ export function filterStations(
   return result.sort(
     (a, b) =>
       a.city.localeCompare(b.city) ||
-      a.area.localeCompare(b.area) ||
+      (a.area ?? "").localeCompare(b.area ?? "") ||
       a.name.localeCompare(b.name),
   );
 }

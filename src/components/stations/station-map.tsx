@@ -15,7 +15,7 @@ export interface MapStation {
   network: string;
   latitude: number;
   longitude: number;
-  powerKw: number;
+  powerKw: number | null;
   verified: boolean;
 }
 

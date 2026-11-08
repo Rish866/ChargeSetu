@@ -22,6 +22,10 @@ const filterSchema = z.object({
   minPower: z
     .preprocess(clean, z.coerce.number().min(0).max(1000).optional())
     .catch(undefined),
+  state: z.preprocess(clean, z.string().max(60).optional()).catch(undefined),
+  vehicle: z.preprocess(clean, z.enum(["car", "two_three_wheeler"]).optional()).catch(undefined),
+  current: z.preprocess(clean, z.enum(["AC", "DC"]).optional()).catch(undefined),
+  page: z.preprocess(clean, z.coerce.number().int().min(1).max(5000).optional()).catch(undefined),
   network: z.preprocess(clean, z.string().max(80).optional()).catch(undefined),
   lat: z
     .preprocess(
@@ -56,7 +60,7 @@ export function parseStationFilters(params: RawSearchParams): StationFilters {
 export function stationsHref(filters: Partial<StationFilters>): string {
   const sp = new URLSearchParams();
   for (const [k, v] of Object.entries(filters)) {
-    if (v === undefined || v === null || v === "" || v === 0) continue;
+    if (v === undefined || v === null || v === "" || v === 0 || (k === "page" && v === 1)) continue;
     sp.set(k, String(v));
   }
   const qs = sp.toString();

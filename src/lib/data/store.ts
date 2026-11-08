@@ -1,5 +1,11 @@
 import type { StationWithDistance } from "@/lib/stations/search";
 import type {
+  ChargingPoint,
+  ClaimStatus,
+  ImportBatch,
+  MapPoint,
+  StateStat,
+  StationClaim,
   DashboardCounts,
   LeadStatus,
   Operator,
@@ -37,6 +43,25 @@ export interface OperatorSummary extends Operator {
   stationCount: number;
 }
 
+export interface SearchResult {
+  items: StationWithDistance[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface MapQuery {
+  minLat: number;
+  minLng: number;
+  maxLat: number;
+  maxLng: number;
+  zoom: number;
+  filters: StationFilters;
+}
+
+/** One row of the nationwide import file, in the shape `import_stations_batch` expects. */
+export type ImportRow = Record<string, unknown>;
+
 export interface StationOption {
   id: string;
   name: string;
@@ -59,6 +84,28 @@ export interface DataStore {
   listRecentlyVerified(limit: number): Promise<Station[]>;
   getFilterOptions(): Promise<{ cities: string[]; networks: string[] }>;
   listStationOptions(): Promise<StationOption[]>;
+
+  /** Paginated, filtered search used by the directory. Scales to tens of thousands of rows. */
+  searchStations(filters: StationFilters, page: number, pageSize: number): Promise<SearchResult>;
+  /** Clustered map markers inside a bounding box. */
+  mapPoints(query: MapQuery): Promise<MapPoint[]>;
+  stateStats(): Promise<StateStat[]>;
+  operatorCounts(): Promise<{ network: string; stations: number }[]>;
+  getChargingPoints(stationId: string): Promise<ChargingPoint[]>;
+  getStationNames(ids: string[]): Promise<Record<string, string>>;
+
+  // ---- Admin: bulk import ----
+  startImportBatch(input: { source: string; label: string; publishAs: "inactive" | "published"; total: number; userId: string }): Promise<string>;
+  importStationsChunk(batchId: string, rows: ImportRow[], publish: boolean): Promise<{ inserted: number; skipped: number }>;
+  finishImportBatch(batchId: string, status: "completed" | "failed", totals: { inserted: number; skipped: number; failed: number }): Promise<void>;
+  listImportBatches(limit: number): Promise<ImportBatch[]>;
+  /** Moves up to `limit` stations of a source/state between inactive and published. Returns rows changed. */
+  bulkSetStatus(args: { source: string; state: string | null; from: StationStatus; to: StationStatus; limit: number }): Promise<number>;
+
+  // ---- Ownership claims ----
+  createClaim(input: { stationId: string; claimantId: string; companyName: string; contactEmail: string; contactPhone: string | null; evidence: string }): Promise<void>;
+  listClaims(status?: ClaimStatus): Promise<StationClaim[]>;
+  setClaimStatus(id: string, status: ClaimStatus, reviewNote: string | null): Promise<void>;
 
   // ---- Privileged reads ----
   getStationById(id: string): Promise<Station | null>;

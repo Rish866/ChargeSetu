@@ -71,6 +71,14 @@ async function AdminDashboard({ searchParams }: { searchParams: PageProps<"/admi
         </Alert>
       )}
 
+      <div className="flex flex-wrap gap-2 text-sm font-semibold">
+        <Link href="/admin/data" className="rounded-xl border border-line bg-white px-3 py-2 hover:bg-gray-50">Nationwide data &amp; import</Link>
+        <Link href="/admin/claims" className="rounded-xl border border-line bg-white px-3 py-2 hover:bg-gray-50">
+          Ownership claims{counts.pendingClaims > 0 ? ` (${counts.pendingClaims})` : ""}
+        </Link>
+        <Link href="/admin/leads" className="rounded-xl border border-line bg-white px-3 py-2 hover:bg-gray-50">Station leads</Link>
+      </div>
+
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         {[
           ["Published", counts.published],
@@ -276,7 +284,7 @@ function StationAdminCard({
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
             <div>
               <dt className="text-xs text-ink-subtle">Opening hours</dt>
-              <dd>{s.openingHours}</dd>
+              <dd>{s.openingHours ?? "Not provided"}</dd>
             </div>
             <div>
               <dt className="text-xs text-ink-subtle">Station phone</dt>
@@ -310,7 +318,7 @@ function StationAdminCard({
             </div>
             <div>
               <dt className="text-xs text-ink-subtle">Connectors</dt>
-              <dd>{s.connectorCount}</dd>
+              <dd>{s.connectorCount ?? "Not provided"}</dd>
             </div>
             <div>
               <dt className="text-xs text-ink-subtle">Price (unverified)</dt>

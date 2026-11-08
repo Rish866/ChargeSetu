@@ -52,6 +52,13 @@ every submission before it goes live.
 **Accounts:** email and password sign-up with email confirmation, sign-in, sign-out, forgot password
 (reset by email), and a required Terms/Privacy consent checkbox at sign-up.
 
+## Nationwide data (pan-India)
+
+An admin can import a cleaned national list of 26,920 source-listed stations (BEE, 26 Oct 2025) from a privately held file, keep it hidden,
+and publish state by state once reuse is permitted. Such stations are always labelled "Source-listed · status unconfirmed".
+See [docs/NATIONWIDE.md](docs/NATIONWIDE.md) (runbook, counts, licensing), [docs/DEPLOY_DATABASE.md](docs/DEPLOY_DATABASE.md)
+(backup + migration without sharing passwords) and [data/README.md](data/README.md).
+
 ## Tech stack
 
 | Concern | Choice |

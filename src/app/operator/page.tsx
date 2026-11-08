@@ -98,7 +98,7 @@ async function OperatorDashboard({ searchParams }: { searchParams: PageProps<"/o
                         )}
                       </h3>
                       <p className="text-sm text-ink-muted">
-                        {s.area}, {s.city} · {formatKw(s.powerKw)} · {s.connectorCount} connectors · {rawPrice(s)}
+                        {s.area ? `${s.area}, ` : ""}{s.city} · {formatKw(s.powerKw)} · {s.connectorCount ?? "?"} connectors · {rawPrice(s)}
                       </p>
                       <p className="text-xs text-ink-subtle">Last updated {formatDate(s.updatedAt)}</p>
                       {s.status === "rejected" && s.rejectionReason && (

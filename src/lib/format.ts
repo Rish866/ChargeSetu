@@ -49,7 +49,8 @@ export function formatDate(iso: string | null | undefined): string {
   return dateFormatter.format(d);
 }
 
-export function formatKw(kw: number): string {
+export function formatKw(kw: number | null | undefined): string {
+  if (kw === null || kw === undefined) return "Power not provided";
   return `${Number.isInteger(kw) ? kw : kw.toFixed(1)} kW`;
 }
 

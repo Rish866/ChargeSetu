@@ -24,7 +24,14 @@ export function ConnectorBadges({ connectors }: { connectors: string[] }) {
   );
 }
 
-export function PowerBadge({ kw }: { kw: number }) {
+export function PowerBadge({ kw }: { kw: number | null }) {
+  if (kw === null) {
+    return (
+      <Badge tone="gray" icon={<Gauge aria-hidden className="size-3" />}>
+        Power not provided
+      </Badge>
+    );
+  }
   const tone: BadgeTone = kw >= 50 ? "violet" : kw > 22 ? "blue" : "gray";
   const label = kw >= 100 ? "Ultra-fast" : kw > 22 ? "DC fast" : "AC";
   return (
@@ -34,7 +41,17 @@ export function PowerBadge({ kw }: { kw: number }) {
   );
 }
 
-export function VerificationBadge({ station }: { station: Pick<Station, "verificationStatus"> }) {
+export const isSourceListed = (s: Pick<Station, "source" | "verificationStatus">) =>
+  s.verificationStatus !== "verified" && (s.source === "bee" || s.source === "osm");
+
+export function VerificationBadge({ station }: { station: Pick<Station, "verificationStatus"> & Partial<Pick<Station, "source">> }) {
+  if (station.verificationStatus !== "verified" && (station.source === "bee" || station.source === "osm")) {
+    return (
+      <Badge tone="amber" icon={<CircleDashed aria-hidden className="size-3.5" />}>
+        Source-listed · status unconfirmed
+      </Badge>
+    );
+  }
   return station.verificationStatus === "verified" ? (
     <Badge tone="green" icon={<BadgeCheck aria-hidden className="size-3.5" />}>
       {t.verification.verified}
@@ -70,8 +87,16 @@ export function DemoBadge({ station }: { station: Pick<Station, "source"> }) {
 export function FreshnessLine({
   station,
 }: {
-  station: Pick<Station, "verificationStatus" | "lastVerifiedAt" | "updatedAt">;
+  station: Pick<Station, "verificationStatus" | "lastVerifiedAt" | "updatedAt"> &
+    Partial<Pick<Station, "source" | "sourceDataAsOf">>;
 }) {
+  if (station.verificationStatus !== "verified" && (station.source === "bee" || station.source === "osm")) {
+    return (
+      <p className="text-xs text-amber-800">
+        Operational status not confirmed · source list dated {formatDate(station.sourceDataAsOf ?? station.updatedAt)}
+      </p>
+    );
+  }
   if (station.verificationStatus !== "verified" || !station.lastVerifiedAt) {
     return (
       <p className="text-xs text-ink-subtle">
@@ -97,5 +122,15 @@ export function AvailabilityNotice({ compact = false }: { compact?: boolean }) {
       {t.stations.availabilityNotConnected}
       {!compact && <span className="hidden sm:inline">— {t.stations.availabilityHelp}</span>}
     </p>
+  );
+}
+
+export function VehicleBadges({ classes }: { classes: string[] }) {
+  if (!classes.length) return null;
+  return (
+    <ul className="flex flex-wrap gap-1.5" aria-label="Vehicle types">
+      {classes.includes("car") && <li><Badge tone="gray">Car</Badge></li>}
+      {classes.includes("two_three_wheeler") && <li><Badge tone="gray">2W / 3W</Badge></li>}
+    </ul>
   );
 }

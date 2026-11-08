@@ -21,7 +21,9 @@ import {
   ConnectorBadges,
   DemoBadge,
   FreshnessLine,
+  isSourceListed,
   PowerBadge,
+  VehicleBadges,
   VerificationBadge,
 } from "@/components/stations/station-badges";
 import { StationMapLoader } from "@/components/stations/station-map-loader";
@@ -32,7 +34,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isMapEnabled } from "@/lib/config";
 import { amenityLabel, connectorLabel } from "@/lib/constants";
-import type { Station } from "@/lib/types";
+import type { ChargingPoint, Station } from "@/lib/types";
 import { getStore } from "@/lib/data";
 import { directionsUrl, displayPrice, formatDate, formatKw, osmUrl } from "@/lib/format";
 import { t } from "@/lib/i18n";
@@ -43,15 +45,16 @@ export async function generateMetadata({ params }: PageProps<"/stations/[id]">):
   const { id } = await params;
   const station = await loadStation(id);
   if (!station) return { title: "Station not found", robots: { index: false } };
-  const title = `${station.name} — EV charging in ${station.area}, ${station.city}`;
-  const description = `${station.network} charging station at ${station.address}, ${station.area}, ${station.city}. Up to ${formatKw(station.powerKw)}; connectors: ${station.connectorTypes.map(connectorLabel).join(", ")}.`;
+  const title = `${station.name} — EV charging in ${station.area ? station.area + ", " : ""}${station.city}`;
+  const description = `${station.network} charging station at ${station.address}, ${station.area ? station.area + ", " : ""}${station.city}. Up to ${formatKw(station.powerKw)}; connectors: ${station.connectorTypes.map(connectorLabel).join(", ")}.`;
   return {
     title,
     description,
     alternates: { canonical: `/stations/${station.slug}` },
     openGraph: { title, description, type: "website" },
     // Fictional demo listings should never be indexed.
-    robots: station.source === "demo" ? { index: false, follow: true } : undefined,
+    // Source-listed (unconfirmed) stations are also kept out of search indexes until verified.
+    robots: station.source === "demo" || (station.source !== "operator" && station.verificationStatus !== "verified") ? { index: false, follow: true } : undefined,
   };
 }
 
@@ -87,10 +90,11 @@ async function StationLoader({ params }: { params: PageProps<"/stations/[id]">["
   const { id } = await params;
   const station = await loadStation(id);
   if (!station) notFound();
-  return <StationDetail station={station} />;
+  const points = await getStore().getChargingPoints(station.id);
+  return <StationDetail station={station} points={points} />;
 }
 
-function StationDetail({ station }: { station: Station }) {
+function StationDetail({ station, points }: { station: Station; points: ChargingPoint[] }) {
   const price = displayPrice(station);
 
   return (
@@ -105,7 +109,7 @@ function StationDetail({ station }: { station: Station }) {
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{station.name}</h1>
           <p className="mt-2 flex items-start gap-1.5 text-ink-muted">
             <MapPin aria-hidden className="mt-0.5 size-4 shrink-0" />
-            {station.address}, {station.area}, {station.city}, {station.state}
+            {station.address}, {station.area ? `${station.area}, ` : ""}{station.city}, {station.state}
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -118,6 +122,13 @@ function StationDetail({ station }: { station: Station }) {
           </ButtonAnchor>
         </div>
       </header>
+
+      {isSourceListed(station) && (
+        <Alert tone="warning" title="Operational status not confirmed">
+          This station comes from a public government list ({station.sourceAttribution ?? "source list"}). We have not confirmed that it is
+          working, open to the public, or that the details below are current. Please check with the operator before travelling.
+        </Alert>
+      )}
 
       {station.source === "demo" && (
         <Alert tone="warning" title="Fictional demo listing">
@@ -133,8 +144,9 @@ function StationDetail({ station }: { station: Station }) {
               <dl className="grid gap-5 sm:grid-cols-2">
                 <Detail icon={Plug} label={t.stations.connectors}>
                   <ConnectorBadges connectors={station.connectorTypes} />
+                  <div className="mt-1.5"><VehicleBadges classes={station.vehicleClasses} /></div>
                   <p className="mt-1.5 text-sm text-ink-muted">
-                    {station.connectorCount} connector{station.connectorCount === 1 ? "" : "s"} in total
+                    {station.connectorCount === null ? "Connector count not provided" : `${station.connectorCount} connector${station.connectorCount === 1 ? "" : "s"} in total`}
                   </p>
                 </Detail>
                 <Detail icon={Gauge} label={t.stations.power}>
@@ -154,7 +166,7 @@ function StationDetail({ station }: { station: Station }) {
                   <p className="mt-1 text-xs text-ink-subtle">Prices in INR. GST and parking fees may apply.</p>
                 </Detail>
                 <Detail icon={Clock} label={t.stations.hours}>
-                  <p className="font-semibold">{station.openingHours}</p>
+                  <p className="font-semibold">{station.openingHours ?? "Not provided by source"}</p>
                 </Detail>
               </dl>
               <div className="rounded-xl bg-gray-50 p-3">
@@ -162,6 +174,31 @@ function StationDetail({ station }: { station: Station }) {
               </div>
             </CardBody>
           </Card>
+
+          {points.length > 0 && (
+            <Card>
+              <CardBody>
+                <h2 className="mb-3 text-lg font-semibold">Charging points</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="text-xs uppercase text-ink-subtle">
+                      <tr><th className="py-1 pr-3">Connector</th><th className="py-1 pr-3">Type</th><th className="py-1 pr-3">Power</th><th className="py-1">Count</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-line">
+                      {points.map((p) => (
+                        <tr key={`${p.standard}-${p.powerKw}`}>
+                          <td className="py-1.5 pr-3">{connectorLabel(p.standard)}</td>
+                          <td className="py-1.5 pr-3">{p.current}</td>
+                          <td className="py-1.5 pr-3">{p.powerKw === null ? "Not provided" : formatKw(p.powerKw)}</td>
+                          <td className="py-1.5">{p.connectorCount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardBody>
+            </Card>
+          )}
 
           {station.amenities.length > 0 && (
             <Card>
@@ -213,7 +250,11 @@ function StationDetail({ station }: { station: Station }) {
               <h2 className="text-base font-semibold">Listing information</h2>
               <p>
                 <span className="text-ink-subtle">Verification: </span>
-                {station.verificationStatus === "verified" ? t.verification.verifiedHelp : t.verification.unverifiedHelp}
+                {station.verificationStatus === "verified"
+                  ? t.verification.verifiedHelp
+                  : isSourceListed(station)
+                    ? "Taken from a public source list. Not independently confirmed by our team."
+                    : t.verification.unverifiedHelp}
               </p>
               <FreshnessLine station={station} />
               <p>
@@ -226,8 +267,19 @@ function StationDetail({ station }: { station: Station }) {
                   ? "Fictional demo data"
                   : station.source === "operator"
                     ? "Submitted by the operator, reviewed by our team"
-                    : "Added by our team"}
+                    : station.source === "bee" || station.source === "osm"
+                      ? (station.sourceAttribution ?? "Public source list")
+                      : "Added by our team"}
               </p>
+              {station.sourceDataAsOf && (
+                <p>
+                  <span className="text-ink-subtle">Source list dated: </span>
+                  {formatDate(station.sourceDataAsOf)}
+                </p>
+              )}
+              {station.nameIsDerived && (
+                <p className="text-xs text-ink-subtle">The source list gives no station name, so this name is built from the operator and place.</p>
+              )}
               <Link href="/about" className="inline-flex items-center gap-1 font-medium text-brand-700 hover:underline">
                 How we verify stations <ArrowRight aria-hidden className="size-4" />
               </Link>
@@ -252,6 +304,11 @@ function StationDetail({ station }: { station: Station }) {
             </Card>
           )}
 
+          {station.source !== "demo" && station.operatorId === null && (
+            <ButtonLink href={`/stations/${station.slug}/claim`} variant="secondary" className="w-full">
+              Is this your station? Claim it
+            </ButtonLink>
+          )}
           <ButtonLink href={`/report?station=${station.id}`} variant="secondary" className="w-full">
             <Flag aria-hidden className="size-4" />
             {t.stations.reportIssue}

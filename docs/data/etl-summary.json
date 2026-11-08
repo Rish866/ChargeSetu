@@ -1,0 +1,29 @@
+{
+  "retrievedAt": "2026-11-07",
+  "bee": {
+    "pagesRead": 292,
+    "stationsDownloaded": 29184,
+    "stationsExpected": 29184,
+    "complete": true,
+    "uniqueIds": 29184,
+    "mergedAwayDuplicates": 2149,
+    "rejected": 0,
+    "cleanStations": 27035,
+    "eligibleB": 26920,
+    "privateC": 115
+  },
+  "osm": {
+    "elementsDownloaded": 613,
+    "privateLeadsC": 401,
+    "duplicatesOfBee": 212,
+    "rejected": 0
+  },
+  "totals": {
+    "rawRows": 31637,
+    "cleanRows": 27436,
+    "rejectedRows": 2361,
+    "eligibleB": 26920,
+    "privateC": 516
+  },
+  "statesWithNoRecords": []
+}
