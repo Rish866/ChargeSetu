@@ -9,7 +9,6 @@ import { StationListSkeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/lib/auth/session";
 import { INDIAN_STATES } from "@/lib/constants";
 import { getStore } from "@/lib/data";
-import { datasetByState, loadBeeDataset } from "@/lib/etl/dataset";
 import { formatDate } from "@/lib/format";
 import { isAdmin } from "@/lib/stations/moderation";
 
@@ -28,8 +27,7 @@ async function DataAdmin() {
   if (!isAdmin(user)) return <AccessDenied user={user} required="admin" next="/admin/data" />;
 
   const store = getStore();
-  const [dataset, stats, batches] = await Promise.all([loadBeeDataset(), store.stateStats(), store.listImportBatches(10)]);
-  const inFile = datasetByState(dataset);
+  const [stats, batches] = await Promise.all([store.stateStats(), store.listImportBatches(10)]);
   const live = new Map(stats.map((s) => [s.state, s]));
   const num = (n: number) => n.toLocaleString("en-IN");
 
@@ -37,17 +35,17 @@ async function DataAdmin() {
     <div className="space-y-8">
       <PageHeader
         title="Nationwide data"
-        description="Import the bundled BEE station list, publish it state by state, and watch coverage."
+        description="Import the cleaned BEE station file, keep it hidden, and publish state by state only once reuse is permitted."
       />
-      <Alert tone="info" title="Before you publish">
-        Imported stations are labelled “Source-listed — operational status not confirmed”. The BEE list has no published reuse licence;
-        get written confirmation from BEE before commercial use (see docs/NATIONWIDE.md).
+      <Alert tone="warning" title="Licence not yet confirmed — keep imports hidden">
+        BEE publishes no reuse licence for its station list. Import privately (hidden) and do not publish until written permission from BEE is
+        on file (see docs/NATIONWIDE.md). Published stations are always labelled “Source-listed · status unconfirmed”.
       </Alert>
 
       <Card>
         <CardBody className="space-y-4">
           <h2 className="text-lg font-semibold">Import and publish</h2>
-          <ImportPanel states={[...INDIAN_STATES]} datasetTotal={dataset.length} />
+          <ImportPanel states={[...INDIAN_STATES]} />
         </CardBody>
       </Card>
 
@@ -58,7 +56,6 @@ async function DataAdmin() {
             <thead className="bg-gray-50 text-xs uppercase text-ink-subtle">
               <tr>
                 <th className="px-3 py-2">State / UT</th>
-                <th className="px-3 py-2 text-right">In file</th>
                 <th className="px-3 py-2 text-right">In database</th>
                 <th className="px-3 py-2 text-right">Published</th>
                 <th className="px-3 py-2 text-right">Hidden</th>
@@ -71,7 +68,6 @@ async function DataAdmin() {
                 return (
                   <tr key={s}>
                     <td className="px-3 py-2 font-medium">{s}</td>
-                    <td className="px-3 py-2 text-right">{num(inFile.get(s) ?? 0)}</td>
                     <td className="px-3 py-2 text-right">{num(l?.total ?? 0)}</td>
                     <td className="px-3 py-2 text-right">{num(l?.published ?? 0)}</td>
                     <td className="px-3 py-2 text-right">{num(l?.hidden ?? 0)}</td>

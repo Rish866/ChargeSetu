@@ -313,18 +313,20 @@ try {
   await page.waitForSelector("text=You don't have access");
   ok("leads: operator blocked", (await page.locator("text=VoltYatra Thane").count()) === 0);
 
-  // ---- Nationwide import (real bundled BEE data, Goa only) ----
+  // ---- Nationwide import (fictional fixture file uploaded through the admin screen) ----
   await page.goto(`${BASE}/login?next=/admin/data`);
   await page.click("text=Continue as admin");
   await page.waitForURL((u) => u.pathname === "/admin/data");
   await page.waitForSelector("text=Import and publish");
   await a11y("admin data");
-  await page.selectOption("select >> nth=0", "Goa");
-  await page.click("button:has-text('Import from BEE list')");
-  await page.waitForSelector("text=/Finished: 142 added, 0 already existed/", { timeout: 60000 });
-  ok("import: Goa 142 stations added", true);
-  await page.click("button:has-text('Import from BEE list')");
-  await page.waitForSelector("text=/Finished: 0 added, 142 already existed/", { timeout: 60000 });
+  await page.setInputFiles("#import-file", "tests/fixtures/sample-clean.csv");
+  await page.waitForSelector("text=/31 importable stations in 1 states/");
+  ok("import: file parsed in browser, OSM + out-of-India rows skipped", (await page.locator("text=/2 rows skipped/").count()) === 1);
+  await page.click("button:has-text('Import 31 stations')");
+  await page.waitForSelector("text=/Finished: 31 added, 0 already existed/", { timeout: 60000 });
+  ok("import: 31 rows added (hidden)", true);
+  await page.click("button:has-text('Import 31 stations')");
+  await page.waitForSelector("text=/Finished: 0 added, 31 already existed/", { timeout: 60000 });
   ok("import: re-run is idempotent", true);
   await page.goto(`${BASE}/stations?state=Goa`);
   await page.waitForSelector("text=No stations match your filters");
@@ -332,22 +334,22 @@ try {
   await page.goto(`${BASE}/admin/data`);
   await page.selectOption("select >> nth=0", "Goa");
   await page.click("button:has-text('Publish imported')");
-  await page.waitForSelector("text=/Published 142 stations \\(Goa\\)/", { timeout: 60000 });
-  ok("import: Goa published", true);
+  await page.waitForSelector("text=/Published 30 stations \\(Goa\\)/", { timeout: 60000 });
+  ok("import: publish skips the suspect-location row (30 of 31)", true);
   await page.goto(`${BASE}/stations?state=Goa`);
-  await page.waitForSelector("text=142 stations found");
+  await page.waitForSelector("text=30 stations found");
   await a11y("stations: source-listed");
   ok("directory: 24 per page with pagination", (await page.locator("main li >> text=Source-listed").count()) === 24 && (await page.locator("nav[aria-label='Pagination']").count()) === 1);
+  ok("directory: never shown as verified", (await page.locator("main li >> text=\"Verified\"").count()) === 0);
   await page.goto(`${BASE}/stations?state=Goa&page=2`);
-  await page.waitForSelector("text=Page 2 of 6");
+  await page.waitForSelector("text=Page 2 of 2");
   ok("directory: page 2 works", true);
-  await page.goto(`${BASE}/stations?state=Goa&q=bicholim`);
+  await page.goto(`${BASE}/stations?state=Goa&q=panaji`);
   await page.waitForSelector("text=/\\d+ stations? found/");
-  await page.locator("main li a:has-text('Bpcl')").first().click();
+  await page.locator("main li a:has-text('Fixture Net')").first().click();
   await page.waitForSelector("text=Operational status not confirmed");
   ok("detail: shows unconfirmed-status banner", true);
   await page.waitForSelector("h2:has-text('Charging points')", { timeout: 10000 });
-  await page.waitForSelector("text=Bureau of Energy Efficiency", { timeout: 10000 });
   ok("detail: unknown hours shown honestly", (await page.locator("text=Not provided by source").count()) >= 1);
   ok("detail: charging points table", (await page.locator("h2:has-text('Charging points')").count()) === 1);
   ok("detail: attribution to BEE", (await page.locator("text=Bureau of Energy Efficiency").count()) >= 1);
@@ -366,7 +368,7 @@ try {
   await page.goto(`${BASE}/login?next=${encodeURIComponent(new URL(detailUrl).pathname + "/claim")}`);
   await page.click("text=Continue as operator");
   await page.waitForSelector("text=Claim this station");
-  await page.fill("#f-evidence", "Our company runs this BPCL outlet under a dealer agreement.");
+  await page.fill("#f-evidence", "Our company runs this fixture outlet under a dealer agreement.");
   await page.click("button:has-text('Submit claim')");
   await page.waitForSelector("text=Claim received");
   ok("claim: operator submitted", true);

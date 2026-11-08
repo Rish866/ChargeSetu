@@ -1,8 +1,9 @@
 import "server-only";
 import { connection } from "next/server";
 import { slugify } from "@/lib/format";
+import { clusterStations } from "@/lib/stations/cluster";
 import { filterOptions, filterStations } from "@/lib/stations/search";
-import type { ChargingPoint, ImportBatch, MapPoint, Report, Station, StationClaim, StationLead, VehicleClass } from "@/lib/types";
+import type { ChargingPoint, ImportBatch, Report, Station, StationClaim, StationLead, VehicleClass } from "@/lib/types";
 import { demoLeads, demoOperators, demoReports, demoStations } from "./demo-seed";
 import { DataStoreError, type DataStore } from "./store";
 
@@ -126,22 +127,7 @@ export const demoStore: DataStore = {
     const inBox = filterStations(state().stations, filters).filter(
       (s) => s.latitude >= minLat && s.latitude <= maxLat && s.longitude >= minLng && s.longitude <= maxLng,
     );
-    const cell = Math.max(180 / 2 ** (Math.min(Math.max(zoom, 3), 18) + 1), 0.0005);
-    const groups = new Map<string, Station[]>();
-    for (const s of inBox) {
-      const key = `${Math.floor(s.latitude / cell)}:${Math.floor(s.longitude / cell)}`;
-      groups.set(key, [...(groups.get(key) ?? []), s]);
-    }
-    const out: MapPoint[] = [];
-    for (const g of groups.values()) {
-      if (g.length === 1) {
-        const s = g[0];
-        out.push({ kind: "station", lat: s.latitude, lng: s.longitude, count: 1, id: s.id, slug: s.slug, name: s.name, powerKw: s.powerKw, verified: s.verificationStatus === "verified", vehicleClasses: s.vehicleClasses });
-      } else {
-        out.push({ kind: "cluster", lat: g.reduce((a, s) => a + s.latitude, 0) / g.length, lng: g.reduce((a, s) => a + s.longitude, 0) / g.length, count: g.length });
-      }
-    }
-    return out.slice(0, 800);
+    return clusterStations(inBox, zoom);
   },
 
   async stateStats() {

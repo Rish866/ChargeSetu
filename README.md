@@ -54,9 +54,10 @@ every submission before it goes live.
 
 ## Nationwide data (pan-India)
 
-ChargeSetu ships with a cleaned national list of 26,920 source-listed stations (BEE, 26 Oct 2025) that an admin imports and publishes
-state by state. They are always labelled "Source-listed · status unconfirmed" until verified. See [docs/NATIONWIDE.md](docs/NATIONWIDE.md)
-for the runbook, counts, licensing blockers and limits, and [data/README.md](data/README.md) for the datasets.
+An admin can import a cleaned national list of 26,920 source-listed stations (BEE, 26 Oct 2025) from a privately held file, keep it hidden,
+and publish state by state once reuse is permitted. Such stations are always labelled "Source-listed · status unconfirmed".
+See [docs/NATIONWIDE.md](docs/NATIONWIDE.md) (runbook, counts, licensing), [docs/DEPLOY_DATABASE.md](docs/DEPLOY_DATABASE.md)
+(backup + migration without sharing passwords) and [data/README.md](data/README.md).
 
 ## Tech stack
 

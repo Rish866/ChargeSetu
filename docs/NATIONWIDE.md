@@ -37,12 +37,18 @@ The database import was tested end-to-end against a real Postgres engine (PGlite
 
 ## Running it in production (admin steps)
 
-1. **Apply the migration.** Supabase → SQL Editor → paste `supabase/migrations/20261108000000_nationwide_expansion.sql` → Run. It is additive; nothing is deleted. (Not yet applied to production.)
-2. Merge the pull request so Vercel deploys.
+1. **Merge the pull request** (safe before the migration: the app falls back to the old behaviour until the new database functions exist).
+2. **Back up and apply the migration** — see [DEPLOY_DATABASE.md](DEPLOY_DATABASE.md) (GitHub Actions secret, or Supabase SQL Editor). Additive; nothing is deleted.
 3. Sign in as admin → **Admin → Nationwide data & import**.
-4. Pick a state (start with one), leave "make visible" unticked, press **Import from BEE list**. Progress is shown; it is safe to re-run.
-5. Check the state dashboard, then press **Publish imported** for that state. Repeat per state (or choose all).
-6. Only after real stations are live: download the demo backup, type `HIDE DEMO`, press **Hide demo stations**. This hides (does not delete) the fictional demo stations and refuses to run if fewer than 500 stations are published.
+4. Choose the private file `india_ev_charging_clean.csv`, pick one state, leave "make visible" **unticked**, press **Import**. The stations are stored **hidden**. Re-running is safe.
+5. **Only once BEE reuse is permitted in writing**: press **Publish imported** for a state. Published stations are labelled "Source-listed · status unconfirmed" and are never shown as verified.
+6. Only after real stations are live: download the demo backup, type `HIDE DEMO`, press **Hide demo stations** (hides, never deletes; refused while fewer than 500 stations are published).
+
+## Where the data is
+
+Station-level BEE records are **not** in the public GitHub repository and are **not** bundled into the website, because BEE has not published a reuse licence. The admin uploads the private file; it is parsed in the admin's browser and sent to the server in validated 250-row chunks. Only aggregate reports (`docs/data/coverage-by-state.csv`, `docs/data/etl-summary.json`) and the source manifest (`data/india_ev_charging_sources.csv`) are committed.
+
+> Earlier commits on the `nationwide-expansion` branch (pushed before this change) contained the record files. They are still reachable in the public Git history of PR #6. Removing them completely requires rewriting that history (force-push) and asking GitHub Support to purge cached pull-request refs — this has **not** been done and needs the owner's decision.
 
 ## Legal and licensing blockers
 

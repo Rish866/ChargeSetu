@@ -1,5 +1,6 @@
 import "server-only";
 import { slugify } from "@/lib/format";
+import { clusterStations } from "@/lib/stations/cluster";
 import { filterStations } from "@/lib/stations/search";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -16,6 +17,7 @@ import type {
   StationStatus,
   VerificationStatus,
 } from "@/lib/types";
+import type { StationFilters } from "@/lib/validation/filters";
 import type { StationInput } from "@/lib/validation/station";
 import type { AmenityId, ConnectorTypeId, IssueTypeId, PriceUnitId } from "@/lib/constants";
 import { DataStoreError, type DataStore, type ModerationPatch } from "./store";
@@ -225,6 +227,31 @@ const randomSuffix = () => crypto.randomUUID().slice(0, 6);
 /** Removes characters that could alter a PostgREST filter expression or act as LIKE wildcards. */
 const safeTerm = (s: string) => s.replace(/[^\p{L}\p{N} .\-]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 100);
 
+/**
+ * True when an error means "this database has not had the nationwide migration
+ * yet" (missing function / column / table). The app then falls back to the
+ * pre-migration behaviour instead of breaking, so code can be deployed first.
+ */
+export function isMissingSchema(error: unknown): boolean {
+  const code = (error as { code?: string } | null)?.code ?? "";
+  return ["PGRST202", "PGRST204", "PGRST205", "42883", "42703", "42P01"].includes(code);
+}
+
+/** Pre-migration search: up to 500 published rows, filtered and sorted in app code (old behaviour). */
+async function legacySearch(filters: StationFilters, page: number, pageSize: number) {
+  const sb = await createSupabaseServerClient();
+  let q = sb.from("stations").select("*").eq("status", "published");
+  if (filters.state) q = q.eq("state", filters.state);
+  if (filters.connector) q = q.contains("connector_types", [filters.connector]);
+  if (filters.minPower) q = q.gte("power_kw", filters.minPower);
+  if (filters.verified) q = q.eq("verification_status", "verified");
+  const { data, error } = await q.limit(MAX_ROWS);
+  if (error) fail("load stations", error);
+  const all = filterStations((data as StationRow[]).map(toStation), filters);
+  const from = (page - 1) * pageSize;
+  return { items: all.slice(from, from + pageSize), total: all.length, page, pageSize };
+}
+
 const CURRENT_LISTS = {
   AC: ["type2", "bharat_ac001", "15a_socket", "lev_ac"],
   DC: ["ccs2", "chademo", "gbt", "bharat_dc001", "type7_lecct", "lev_dc"],
@@ -253,6 +280,7 @@ export const supabaseStore: DataStore = {
         p_verified: Boolean(filters.verified),
         p_q: term ?? null,
       });
+      if (nearErr && isMissingSchema(nearErr)) return legacySearch(filters, page, pageSize);
       if (nearErr) fail("search nearby stations", nearErr);
       const hits = (near ?? []) as { id: string; distance_km: number; total_count: number }[];
       if (hits.length === 0) return { items: [], total: 0, page, pageSize };
@@ -284,6 +312,7 @@ export const supabaseStore: DataStore = {
       .order("city")
       .order("name")
       .range(from, from + pageSize - 1);
+    if (error && isMissingSchema(error)) return legacySearch(filters, page, pageSize);
     if (error) fail("search stations", error);
     return { items: (data as StationRow[]).map(toStation), total: count ?? 0, page, pageSize };
   },
@@ -305,6 +334,20 @@ export const supabaseStore: DataStore = {
       p_verified: Boolean(filters.verified),
       p_q: filters.q ? safeTerm(filters.q) : null,
     });
+    if (error && isMissingSchema(error)) {
+      // Pre-migration database: cluster in app code from published rows in the box.
+      const { data: rows, error: e2 } = await sb
+        .from("stations")
+        .select("*")
+        .eq("status", "published")
+        .gte("latitude", minLat)
+        .lte("latitude", maxLat)
+        .gte("longitude", minLng)
+        .lte("longitude", maxLng)
+        .limit(MAX_ROWS);
+      if (e2) fail("load map points", e2);
+      return clusterStations(filterStations((rows as StationRow[]).map(toStation), filters), zoom);
+    }
     if (error) fail("load map points", error);
     type Row = { kind: string; lat: number; lng: number; n: number; id: string | null; slug: string | null; name: string | null; power_kw: number | null; verified: boolean | null; vehicle_classes: string[] | null };
     return ((data ?? []) as Row[]).map((r) => ({
@@ -324,6 +367,7 @@ export const supabaseStore: DataStore = {
   async stateStats() {
     const sb = await createSupabaseServerClient();
     const { data, error } = await sb.rpc("state_stats");
+    if (error && isMissingSchema(error)) return [];
     if (error) fail("load state statistics", error);
     type Row = { state: string; total: number; published: number; hidden: number; pending: number; verified: number; source_listed: number; suspect: number };
     return ((data ?? []) as Row[]).map((r) => ({

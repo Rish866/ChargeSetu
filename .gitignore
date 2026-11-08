@@ -43,3 +43,9 @@ next-env.d.ts
 
 # test artifacts
 e2e-failure.png
+
+# Station-level source records are NOT committed (BEE reuse licence unconfirmed).
+# Keep them privately; see data/README.md.
+data/india_ev_charging_raw.csv
+data/india_ev_charging_clean.csv
+data/india_ev_charging_rejected.csv

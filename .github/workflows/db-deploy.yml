@@ -1,0 +1,44 @@
+# Manually-triggered production database operations. Uses the SUPABASE_DB_URL
+# repository secret (Supabase "Session pooler" connection string). The secret is
+# never printed; GitHub also masks it in logs. Only people with write access to
+# the repository can run this workflow.
+name: Production database
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "check = read-only status, backup = in-database backup, migrate = backup + nationwide migration + checks, verify = read-only checks"
+        required: true
+        default: check
+        type: choice
+        options: [check, backup, migrate, verify]
+      confirm:
+        description: 'For "migrate" only: type APPLY NATIONWIDE MIGRATION'
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-database
+  cancel-in-progress: false
+
+jobs:
+  db:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run ${{ inputs.mode }}
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: node scripts/db/deploy.mjs "${{ inputs.mode }}"

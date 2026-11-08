@@ -17,11 +17,6 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
-  // The nationwide import reads this CSV at runtime; make sure it ships with the serverless functions.
-  outputFileTracingIncludes: {
-    "/admin/data": ["./data/india_ev_charging_clean.csv"],
-    "/admin/data/*": ["./data/india_ev_charging_clean.csv"],
-  },
   turbopack: {
     rules: {
       "*.css": {

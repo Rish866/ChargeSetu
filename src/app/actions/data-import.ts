@@ -5,7 +5,7 @@ import { z } from "zod";
 import { authorize } from "@/lib/auth/session";
 import { INDIAN_STATES } from "@/lib/constants";
 import { getStore } from "@/lib/data";
-import { loadBeeDataset } from "@/lib/etl/dataset";
+import { importChunkSchema } from "@/lib/etl/import-schema";
 
 async function requireAdmin() {
   const user = await authorize(["admin"]);
@@ -14,61 +14,57 @@ async function requireAdmin() {
 }
 
 const stateSchema = z.enum(INDIAN_STATES as unknown as [string, ...string[]]).nullable();
-const CHUNK = 500;
+const errMsg = (e: unknown, fallback: string) =>
+  e instanceof z.ZodError ? "The file contains rows that failed validation." : e instanceof Error ? e.message : fallback;
 
 export interface ImportProgress {
   ok: boolean;
   message?: string;
   inserted?: number;
   skipped?: number;
-  nextOffset?: number;
-  total?: number;
   batchId?: string;
 }
 
-/** Step 1: counts the rows in scope and opens a batch record. */
-export async function startImportAction(input: { state: string | null; publish: boolean }): Promise<ImportProgress> {
+/** Step 1: opens a batch record for an uploaded, browser-parsed file. */
+export async function startImportAction(input: { label: string; total: number; publish: boolean }): Promise<ImportProgress> {
   try {
     const user = await requireAdmin();
-    const state = stateSchema.parse(input.state);
-    const rows = (await loadBeeDataset()).filter((r) => !state || r.state === state);
-    if (rows.length === 0) return { ok: false, message: "No rows in the bundled dataset for that scope." };
+    const label = z.string().trim().min(1).max(200).parse(input.label);
+    const total = z.number().int().min(1).max(100_000).parse(input.total);
     const batchId = await getStore().startImportBatch({
       source: "bee",
-      label: `BEE list (26 Oct 2025) — ${state ?? "all states"}`,
+      label,
       publishAs: input.publish ? "published" : "inactive",
-      total: rows.length,
+      total,
       userId: user.id,
     });
-    return { ok: true, batchId, total: rows.length, nextOffset: 0 };
+    return { ok: true, batchId };
   } catch (e) {
-    return { ok: false, message: e instanceof Error ? e.message : "Could not start the import." };
+    return { ok: false, message: errMsg(e, "Could not start the import.") };
   }
 }
 
-/** Step 2 (repeated): imports one chunk. Safe to re-run — existing rows are skipped. */
-export async function importChunkAction(input: { batchId: string; state: string | null; publish: boolean; offset: number }): Promise<ImportProgress> {
+/** Step 2 (repeated): validates and imports one chunk. Safe to re-run — existing rows are skipped. */
+export async function importChunkAction(input: { batchId: string; rows: unknown; publish: boolean }): Promise<ImportProgress> {
   try {
     await requireAdmin();
-    const state = stateSchema.parse(input.state);
-    const offset = z.number().int().min(0).parse(input.offset);
     const batchId = z.string().uuid().parse(input.batchId);
-    const rows = (await loadBeeDataset()).filter((r) => !state || r.state === state);
-    const slice = rows.slice(offset, offset + CHUNK);
-    const res = await getStore().importStationsChunk(batchId, slice as unknown as Record<string, unknown>[], input.publish);
-    return { ok: true, ...res, nextOffset: offset + slice.length, total: rows.length };
+    const rows = importChunkSchema.parse(input.rows);
+    const res = await getStore().importStationsChunk(batchId, rows, Boolean(input.publish));
+    return { ok: true, ...res };
   } catch (e) {
-    return { ok: false, message: e instanceof Error ? e.message : "Import failed." };
+    return { ok: false, message: errMsg(e, "Import failed.") };
   }
 }
 
 /** Step 3: closes the batch with its final totals. */
 export async function finishImportAction(input: { batchId: string; ok: boolean; inserted: number; skipped: number; failed: number }) {
   await requireAdmin();
+  const n = z.number().int().min(0).max(100_000);
   await getStore().finishImportBatch(z.string().uuid().parse(input.batchId), input.ok ? "completed" : "failed", {
-    inserted: input.inserted,
-    skipped: input.skipped,
-    failed: input.failed,
+    inserted: n.parse(input.inserted),
+    skipped: n.parse(input.skipped),
+    failed: n.parse(input.failed),
   });
   revalidatePath("/admin/data");
   revalidatePath("/stations");
@@ -95,7 +91,7 @@ export async function bulkStatusAction(input: { state: string | null; to: "publi
     }
     return { ok: true, changed };
   } catch (e) {
-    return { ok: false, changed: 0, message: e instanceof Error ? e.message : "Update failed." };
+    return { ok: false, changed: 0, message: errMsg(e, "Update failed.") };
   }
 }
 
@@ -118,6 +114,6 @@ export async function hideDemoStationsAction(input: { confirm: string }): Promis
     revalidatePath("/");
     return { ok: true, changed };
   } catch (e) {
-    return { ok: false, changed: 0, message: e instanceof Error ? e.message : "Update failed." };
+    return { ok: false, changed: 0, message: errMsg(e, "Update failed.") };
   }
 }

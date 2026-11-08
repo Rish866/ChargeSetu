@@ -355,6 +355,7 @@ begin
 end;
 $$;
 
+revoke execute on function public.import_stations_batch(jsonb, boolean, uuid) from public, anon;
 grant execute on function public.import_stations_batch(jsonb, boolean, uuid) to authenticated;
 
 -- ---------- 7. Chunked bulk publish / hide (admin only) ----------------------
@@ -389,4 +390,5 @@ begin
   return n;
 end;
 $$;
+revoke execute on function public.admin_bulk_set_status(text, text, public.station_status, public.station_status, integer) from public, anon;
 grant execute on function public.admin_bulk_set_status(text, text, public.station_status, public.station_status, integer) to authenticated;

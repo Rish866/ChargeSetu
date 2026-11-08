@@ -1,6 +1,7 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseCsv } from "./csv";
+import { importChunkSchema } from "./import-schema";
 import { cleanRowToImport, isWithinIndia, parseConnectorsDetail, parseVehicleClasses } from "./import-map";
 
 describe("parseCsv", () => {
@@ -29,35 +30,53 @@ describe("connector parsing", () => {
   });
 });
 
-describe("bundled dataset", () => {
-  const rows = parseCsv(readFileSync("data/india_ev_charging_clean.csv", "utf8"));
+const PRIVATE_FILE = process.env.CHARGESETU_PRIVATE_DATA ?? "../private-data/india_ev_charging_clean.csv";
+
+describe("fixture file (fictional rows)", () => {
+  const rows = parseCsv(readFileSync("tests/fixtures/sample-clean.csv", "utf8"));
+  const mapped = rows.map(cleanRowToImport).filter((r) => r !== null);
+  it("skips OSM rows and out-of-India coordinates", () => {
+    expect(rows).toHaveLength(33);
+    expect(mapped).toHaveLength(31);
+    expect(mapped.filter((r) => r.eligibility === "B")).toHaveLength(30);
+  });
+  it("passes server-side validation", () => {
+    expect(importChunkSchema.safeParse(mapped).success).toBe(true);
+  });
+  it("leaves an unknown power as null", () => {
+    expect(mapped.some((r) => r.power_kw === null)).toBe(true);
+  });
+  it("rejects tampered rows", () => {
+    const bad = [{ ...mapped[0], source: "operator" }, { ...mapped[0], latitude: 50 }, { ...mapped[0], slug: "<script>" }];
+    for (const b of bad) expect(importChunkSchema.safeParse([b]).success).toBe(false);
+    expect(importChunkSchema.safeParse(Array(251).fill(mapped[0])).success).toBe(false);
+  });
+});
+
+// The real BEE file is kept out of the public repository (licence unconfirmed).
+// These checks run only where the private copy exists.
+describe.skipIf(!existsSync(PRIVATE_FILE))("private BEE dataset", () => {
+  const rows = existsSync(PRIVATE_FILE) ? parseCsv(readFileSync(PRIVATE_FILE, "utf8")) : [];
   const mapped = rows.map(cleanRowToImport).filter((r) => r !== null);
 
-  it("imports only BEE rows and never OSM leads", () => {
-    expect(rows.some((r) => r.source === "osm")).toBe(true);
-    expect(mapped.every((r) => r.source === "bee")).toBe(true);
+  it("imports only BEE rows inside India", () => {
+    expect(mapped.length).toBe(26920);
+    expect(mapped.every((r) => r.source === "bee" && isWithinIndia(r.latitude, r.longitude))).toBe(true);
+  });
+  it("every row passes server-side validation", () => {
+    for (let i = 0; i < mapped.length; i += 250) {
+      const res = importChunkSchema.safeParse(mapped.slice(i, i + 250));
+      if (!res.success) throw new Error(JSON.stringify(res.error.issues.slice(0, 3)));
+    }
   });
   it("has unique external ids and slugs", () => {
     expect(new Set(mapped.map((r) => r.external_id)).size).toBe(mapped.length);
     expect(new Set(mapped.map((r) => r.slug)).size).toBe(mapped.length);
-  });
-  it("skips rows whose coordinates fall outside India instead of guessing a fix", () => {
-    const bee = rows.filter((r) => r.source === "bee");
-    const outside = bee.filter((r) => !isWithinIndia(Number(r.latitude), Number(r.longitude)));
-    expect(outside.length).toBeGreaterThan(0);
-    expect(mapped.length).toBe(bee.length - outside.length);
-    expect(mapped.every((r) => isWithinIndia(r.latitude, r.longitude))).toBe(true);
-  });
-  it("never marks suspect coordinates as publishable", () => {
-    expect(mapped.filter((r) => r.location_quality === "suspect").every((r) => r.eligibility === "C")).toBe(true);
   });
   it("keeps points unique per (standard, power) so the DB unique index holds", () => {
     for (const r of mapped) {
       const keys = r.points.map((p) => `${p.standard}|${p.power_kw}`);
       expect(new Set(keys).size).toBe(keys.length);
     }
-  });
-  it("leaves unknown values null instead of inventing them", () => {
-    expect(mapped.every((r) => r.power_kw === null || r.power_kw > 0)).toBe(true);
   });
 });
