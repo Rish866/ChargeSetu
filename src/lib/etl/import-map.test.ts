@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseCsv } from "./csv";
 import { importChunkSchema } from "./import-schema";
+import { unreadableFields } from "./text-quality";
 import { cleanRowToImport, isWithinIndia, parseConnectorsDetail, parseVehicleClasses } from "./import-map";
 
 describe("parseCsv", () => {
@@ -35,10 +36,17 @@ const PRIVATE_FILE = process.env.CHARGESETU_PRIVATE_DATA ?? "../private-data/ind
 describe("fixture file (fictional rows)", () => {
   const rows = parseCsv(readFileSync("tests/fixtures/sample-clean.csv", "utf8"));
   const mapped = rows.map(cleanRowToImport).filter((r) => r !== null);
-  it("skips OSM rows and out-of-India coordinates", () => {
-    expect(rows).toHaveLength(33);
-    expect(mapped).toHaveLength(31);
-    expect(mapped.filter((r) => r.eligibility === "B")).toHaveLength(30);
+  it("imports only level-B readable rows: skips OSM, level C, out-of-India and garbled text", () => {
+    expect(rows).toHaveLength(35);
+    expect(mapped).toHaveLength(30);
+    expect(mapped.every((r) => r.eligibility === "B" && r.location_quality === "ok")).toBe(true);
+    const ids = new Set(mapped.map((r) => r.external_id));
+    for (const skipped of ["fixture_0099", "fixture_0098", "fixture_0097", "fixture_0096", "node/1"]) expect(ids.has(skipped)).toBe(false);
+  });
+  it("drops a garbled row even when an old file still marks it level B", () => {
+    const old = rows.find((r) => r.source_id === "fixture_0097")!;
+    expect(old.publication_eligibility).toBe("B");
+    expect(cleanRowToImport(old)).toBeNull();
   });
   it("passes server-side validation", () => {
     expect(importChunkSchema.safeParse(mapped).success).toBe(true);
@@ -47,7 +55,16 @@ describe("fixture file (fictional rows)", () => {
     expect(mapped.some((r) => r.power_kw === null)).toBe(true);
   });
   it("rejects tampered rows", () => {
-    const bad = [{ ...mapped[0], source: "operator" }, { ...mapped[0], latitude: 50 }, { ...mapped[0], slug: "<script>" }];
+    const bad = [
+      { ...mapped[0], source: "operator" },
+      { ...mapped[0], latitude: 50 },
+      { ...mapped[0], slug: "<script>" },
+      { ...mapped[0], eligibility: "C" },
+      { ...mapped[0], location_quality: "suspect" },
+      { ...mapped[0], address: "ĞƚŝŵͲWŽŵďƵƌƉĂZĚ͕ůƚŽ" },
+      { ...mapped[0], district: ":ĂůƉĂŝŐƵƌŝ\u0003" },
+      { ...mapped[0], name: "\u0005@MF@KNQD\u0003" },
+    ];
     for (const b of bad) expect(importChunkSchema.safeParse([b]).success).toBe(false);
     expect(importChunkSchema.safeParse(Array(251).fill(mapped[0])).success).toBe(false);
   });
@@ -59,9 +76,19 @@ describe.skipIf(!existsSync(PRIVATE_FILE))("private BEE dataset", () => {
   const rows = existsSync(PRIVATE_FILE) ? parseCsv(readFileSync(PRIVATE_FILE, "utf8")) : [];
   const mapped = rows.map(cleanRowToImport).filter((r) => r !== null);
 
-  it("imports only BEE rows inside India", () => {
-    expect(mapped.length).toBe(26920);
+  it("imports only level-B BEE rows inside India with readable text (26,621)", () => {
+    expect(mapped.length).toBe(26621);
     expect(mapped.every((r) => r.source === "bee" && isWithinIndia(r.latitude, r.longitude))).toBe(true);
+    expect(mapped.every((r) => unreadableFields(r as unknown as Record<string, unknown>, ["name", "network", "district", "city", "address"]).length === 0)).toBe(true);
+  });
+  it("marks every unreadable-text record level C (299 of them, including the 259 first found)", () => {
+    const bee = rows.filter((r) => r.source === "bee");
+    const unreadable = bee.filter((r) => r.flags.includes("unreadable_text_in_source"));
+    expect(unreadable).toHaveLength(299);
+    expect(unreadable.every((r) => r.publication_eligibility === "C")).toBe(true);
+    // Independent re-check: no level-B row anywhere contains unreadable text.
+    expect(bee.filter((r) => r.publication_eligibility === "B" && unreadableFields(r).length > 0)).toHaveLength(0);
+    expect(bee.filter((r) => r.publication_eligibility === "B")).toHaveLength(26621);
   });
   it("every row passes server-side validation", () => {
     for (let i = 0; i < mapped.length; i += 250) {

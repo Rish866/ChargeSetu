@@ -129,18 +129,18 @@ const cov = INDIAN_STATES.map((state) => {
   const fast = rows.filter((r) => /Car/.test(r.vehicle_compatibility) && /DC/.test(r.charger_type) && Number(r.rated_power_kw) >= 50).length;
   const avg = rows.length ? rows.reduce((a, r) => a + Number(r.data_quality_score), 0) / rows.length : 0;
   return {
-    state, bee_stations: String(rows.length), eligible_B: String(rows.filter((r) => r.publication_eligibility === "B").length), private_C: String(rows.filter((r) => r.publication_eligibility === "C").length),
+    state, bee_stations: String(rows.length), eligible_B: String(rows.filter((r) => r.publication_eligibility === "B").length), private_C: String(rows.filter((r) => r.publication_eligibility === "C").length), private_C_unreadable_text: String(rows.filter((r) => r.flags.includes("unreadable_text_in_source")).length),
     car_capable: String(car), car_fast_dc_50kw_plus: String(fast), two_three_wheeler_only: String(rows.filter((r) => r.vehicle_compatibility === "2W/3W").length),
     cities: String(new Set(rows.map((r) => r.city)).size), avg_quality: avg.toFixed(1), osm_private_leads: String(osm), coverage_note: rows.length === 0 ? "NO RECORDS in any source" : rows.length < 25 ? "thin coverage" : "",
   };
 });
-const COV_COLS = ["state", "bee_stations", "eligible_B", "private_C", "car_capable", "car_fast_dc_50kw_plus", "two_three_wheeler_only", "cities", "avg_quality", "osm_private_leads", "coverage_note"];
+const COV_COLS = ["state", "bee_stations", "eligible_B", "private_C", "private_C_unreadable_text", "car_capable", "car_fast_dc_50kw_plus", "two_three_wheeler_only", "cities", "avg_quality", "osm_private_leads", "coverage_note"];
 writeFileSync("docs/data/coverage-by-state.csv", toCsv(cov, COV_COLS as never));
 
 const count = (f: (r: CleanRow) => boolean) => cleanRows.filter(f).length;
 const summary = {
   retrievedAt,
-  bee: { pagesRead: pageFiles.length, stationsDownloaded: beeRaw.length, stationsExpected: expected, complete: beeRaw.length === expected, uniqueIds: unique.length, mergedAwayDuplicates: rejected.filter((r) => r.decision === "merged").length, rejected: rejected.filter((r) => r.source === "bee" && r.decision === "rejected").length, cleanStations: bee.length, eligibleB: bee.filter((r) => r.publication_eligibility === "B").length, privateC: bee.filter((r) => r.publication_eligibility === "C").length },
+  bee: { pagesRead: pageFiles.length, stationsDownloaded: beeRaw.length, stationsExpected: expected, complete: beeRaw.length === expected, uniqueIds: unique.length, mergedAwayDuplicates: rejected.filter((r) => r.decision === "merged").length, rejected: rejected.filter((r) => r.source === "bee" && r.decision === "rejected").length, cleanStations: bee.length, eligibleB: bee.filter((r) => r.publication_eligibility === "B").length, privateC: bee.filter((r) => r.publication_eligibility === "C").length, privateCReasons: { suspectCoordinates: bee.filter((r) => r.flags.includes("suspect_coordinates_in_source") || r.flags.includes("coordinates_outside_india")).length, unreadableText: bee.filter((r) => r.flags.includes("unreadable_text_in_source")).length } },
   osm: { elementsDownloaded: osmElements, privateLeadsC: count((r) => r.source === "osm"), duplicatesOfBee: rejected.filter((r) => r.source === "osm" && r.reason === "within_75m_of_bee_station").length, rejected: rejected.filter((r) => r.source === "osm" && r.decision === "rejected").length },
   totals: { rawRows: rawRows.length, cleanRows: cleanRows.length, rejectedRows: rejected.length, eligibleB: count((r) => r.publication_eligibility === "B"), privateC: count((r) => r.publication_eligibility === "C") },
   statesWithNoRecords: cov.filter((c) => c.bee_stations === "0").map((c) => c.state),
