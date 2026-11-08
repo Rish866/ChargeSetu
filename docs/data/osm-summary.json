@@ -1,0 +1,36 @@
+{
+  "source": "OpenStreetMap amenity=charging_station (Overpass) + Nominatim reverse geocoding",
+  "licence": "ODbL 1.0 (Open Database License)",
+  "osmBase": "2026-11-08T18:39:19Z",
+  "retrievedAt": "2026-11-08",
+  "elementsDownloaded": 621,
+  "publishable": 534,
+  "excluded": 87,
+  "excludedByReason": {
+    "access_private": 10,
+    "access_no": 3,
+    "battery_swap_not_a_charger": 25,
+    "duplicate_of": 49
+  },
+  "statesWithStations": 22,
+  "statesWithout": [
+    "Arunachal Pradesh",
+    "Assam",
+    "Chandigarh",
+    "Chhattisgarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Himachal Pradesh",
+    "Ladakh",
+    "Lakshadweep",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Sikkim",
+    "Tripura"
+  ],
+  "withConnectorDetails": 32,
+  "withPower": 11,
+  "withNamedOperator": 281,
+  "approximateAddresses": 507
+}

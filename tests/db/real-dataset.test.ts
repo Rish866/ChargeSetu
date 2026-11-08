@@ -52,7 +52,7 @@ beforeAll(async () => {
     create role anon nologin; create role authenticated nologin;
     create schema auth;
     create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}'::jsonb);
-    create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claims', true)::jsonb ->> 'sub', '')::uuid $$;
+    create function auth.uid() returns uuid language sql stable as $$ select nullif(nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub', '')::uuid $$;
     grant usage on schema auth to anon, authenticated;
     grant execute on function auth.uid() to anon, authenticated;
     grant usage on schema public to anon, authenticated;
@@ -75,7 +75,13 @@ describe(`${usingReal ? "real BEE" : "fixture"} dataset through the migration`, 
     expect(await n(`select count(*)::int n from public.stations where source = 'bee'`)).toBe(data.length);
   }, 300_000);
 
-  it("publishes level-B only, in chunks, and never suspect locations", async () => {
+  it("refuses to publish BEE stations while reuse permission is not recorded", async () => {
+    await expect(asAdmin(() => db.query(`select public.admin_bulk_set_status('bee', null, 'inactive', 'published', 5000)`))).rejects.toThrow(/not permitted/);
+    expect(await n(`select count(*)::int n from public.stations where source = 'bee' and status = 'published'`)).toBe(0);
+  });
+
+  it("once permission is recorded: publishes level-B only, in chunks, and never suspect locations", async () => {
+    await db.query(`update public.source_publication_permissions set publish_allowed = true, basis = 'Test only: simulated written permission' where source = 'bee'`);
     let total = 0;
     for (;;) {
       const r = await asAdmin(() => db.query<{ c: number }>(`select public.admin_bulk_set_status('bee', null, 'inactive', 'published', 5000) c`));
