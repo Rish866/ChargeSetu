@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { FlaskConical } from "lucide-react";
 import { isDemoMode } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
 /** Shown on every page while running without a real database. */
-export function DemoBanner() {
+export async function DemoBanner() {
+  const t = await getT();
   if (!isDemoMode()) return null;
   return (
     <div className="border-b border-amber-200 bg-amber-50 text-amber-900">

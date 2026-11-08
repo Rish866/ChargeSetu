@@ -3,6 +3,7 @@
 
   ui.py find  <regex>   -> prints "x y" of the first visible node whose text/content-desc matches
   ui.py has   <regex>   -> exit 0 if any node matches
+  ui.py edit            -> prints "x y" of the first visible text input (EditText)
   ui.py texts           -> prints all visible texts (for logs)
 Reads the dump XML from stdin.
 """
@@ -27,6 +28,12 @@ def main():
     if cmd == "texts":
         print(" | ".join(l for l, _, _ in nodes(root) if l)[:4000])
         return
+    if cmd == "edit":
+        for _, (x, y), n in nodes(root):
+            if n.get("class") == "android.widget.EditText":
+                print(x, y)
+                return
+        sys.exit(1)
     rx = re.compile(sys.argv[2], re.I)
     for label, (x, y), _ in nodes(root):
         if rx.search(label):

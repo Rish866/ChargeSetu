@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { Component, type ReactNode } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
 import type { MapStation } from "./station-map";
 
 // Leaflet touches `window`, so it must only load in the browser.
@@ -18,6 +18,11 @@ const ExplorerMap = dynamic(() => import("./explorer-map"), {
   loading: () => <Skeleton className="h-[32rem] w-full rounded-2xl" />,
 });
 
+function MapUnavailable() {
+  const t = useT();
+  return <Alert tone="warning">{t.stations.mapUnavailable}</Alert>;
+}
+
 /** If the map crashes (e.g. script blocked), show a notice instead of breaking the page. */
 class MapErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -28,7 +33,7 @@ class MapErrorBoundary extends Component<{ children: ReactNode }, { failed: bool
     console.error("[map]", error);
   }
   render() {
-    if (this.state.failed) return <Alert tone="warning">{t.stations.mapUnavailable}</Alert>;
+    if (this.state.failed) return <MapUnavailable />;
     return this.props.children;
   }
 }

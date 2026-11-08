@@ -41,6 +41,7 @@ interface StationRow {
   location_quality?: string | null;
   name_is_derived?: boolean | null;
   data_quality_score?: number | null;
+  source_notes?: string | null;
   city: string;
   state: string;
   country: string;
@@ -168,6 +169,7 @@ function toStation(r: StationRow): Station {
     locationQuality: (r.location_quality ?? "ok") as LocationQuality,
     nameIsDerived: r.name_is_derived ?? false,
     dataQualityScore: r.data_quality_score ?? null,
+    sourceNotes: r.source_notes ?? null,
     price: r.price === null ? null : Number(r.price),
     priceUnit: r.price_unit as PriceUnitId,
     openingHours: r.opening_hours,

@@ -9,7 +9,7 @@ import {
 } from "@/app/actions/admin";
 import { ButtonLink } from "@/components/ui/button";
 import { SubmitButton } from "@/components/ui/form";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 import type { Station } from "@/lib/types";
 
 function ActionForm({
@@ -33,7 +33,8 @@ function ActionForm({
   );
 }
 
-function RejectForm({ id }: { id: string }) {
+async function RejectForm({ id }: { id: string }) {
+  const t = await getT();
   return (
     <details className="group w-full">
       <summary className="inline-flex h-9 cursor-pointer list-none items-center rounded-xl border border-red-200 bg-white px-3 text-sm font-semibold text-red-700 hover:bg-red-50">
@@ -61,7 +62,8 @@ function RejectForm({ id }: { id: string }) {
 }
 
 /** The set of moderation actions valid for a station's current state. */
-export function ModerationButtons({ station }: { station: Station }) {
+export async function ModerationButtons({ station }: { station: Station }) {
+  const t = await getT();
   const { id, status, verificationStatus } = station;
   return (
     <div className="flex flex-wrap items-start gap-2">

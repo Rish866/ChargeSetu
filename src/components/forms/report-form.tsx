@@ -7,7 +7,7 @@ import { Alert } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button";
 import { SelectField, SubmitButton, TextField, TextareaField } from "@/components/ui/form";
 import { ISSUE_TYPES } from "@/lib/constants";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
 import { initialFormState } from "@/lib/types";
 
 export function ReportForm({
@@ -17,6 +17,7 @@ export function ReportForm({
   stations: { id: string; name: string; city: string }[];
   defaultStationId?: string;
 }) {
+  const t = useT();
   const [state, formAction] = useActionState(submitReportAction, initialFormState);
   // When the form first appeared — lets the server ignore instant bot submissions.
   const shownAt = useRef(0);

@@ -12,7 +12,7 @@ import {
   TextareaField,
 } from "@/components/ui/form";
 import { AMENITIES, CONNECTOR_TYPES, INDIAN_STATES, PRICE_UNITS } from "@/lib/constants";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
 import { initialFormState, type FormState, type Station } from "@/lib/types";
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>;
@@ -43,6 +43,7 @@ export function StationForm({
   cancelHref: string;
   reviewNotice?: boolean;
 }) {
+  const t = useT();
   const [state, formAction] = useActionState(action, initialFormState);
   const latRef = useRef<HTMLInputElement>(null);
   const lngRef = useRef<HTMLInputElement>(null);

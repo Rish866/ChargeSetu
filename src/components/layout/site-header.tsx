@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Logo } from "./logo";
 import { DesktopNav } from "./nav-links";
+import { LanguageSwitch } from "./language-switch";
 import { UserMenu, UserMenuFallback } from "./user-menu";
 
 export function SiteHeader() {
@@ -11,9 +12,12 @@ export function SiteHeader() {
           <Logo />
           <DesktopNav />
         </div>
-        <Suspense fallback={<UserMenuFallback />}>
-          <UserMenu />
-        </Suspense>
+        <div className="flex items-center gap-1">
+          <LanguageSwitch />
+          <Suspense fallback={<UserMenuFallback />}>
+            <UserMenu />
+          </Suspense>
+        </div>
       </div>
     </header>
   );

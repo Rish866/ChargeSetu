@@ -3,7 +3,7 @@ import { Clock, IndianRupee, MapPin, Navigation } from "lucide-react";
 import { ButtonAnchor, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { directionsUrl, displayPrice, formatDistanceKm } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 import type { StationWithDistance } from "@/lib/stations/search";
 import {
   AvailabilityNotice,
@@ -15,7 +15,8 @@ import {
   VerificationBadge,
 } from "./station-badges";
 
-export function StationCard({ station }: { station: StationWithDistance }) {
+export async function StationCard({ station }: { station: StationWithDistance }) {
+  const t = await getT();
   const price = displayPrice(station);
   const href = `/stations/${station.slug}`;
 

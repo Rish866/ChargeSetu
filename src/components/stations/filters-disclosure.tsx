@@ -3,7 +3,7 @@
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useId, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
 
 /** Filters are always visible on desktop and collapsible on mobile. */
 export function FiltersDisclosure({
@@ -13,6 +13,7 @@ export function FiltersDisclosure({
   activeCount: number;
   children: ReactNode;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(activeCount > 0);
   const panelId = useId();
 

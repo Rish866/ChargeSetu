@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 import { Logo } from "./logo";
 
 const linkClass = "hover:text-ink";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const t = await getT();
   return (
     <footer className="mt-16 border-t border-line bg-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm sm:grid-cols-2 lg:grid-cols-4">
@@ -36,13 +37,16 @@ export function SiteFooter() {
           <h2 className="mb-3 font-semibold">Help</h2>
           <ul className="space-y-2 text-ink-muted">
             <li><Link className={linkClass} href="/contact">Contact &amp; support</Link></li>
+            <li><Link className={linkClass} href="/open-data">Open data &amp; sources</Link></li>
             <li><Link className={linkClass} href="/privacy">Privacy Policy</Link></li>
             <li><Link className={linkClass} href="/terms">Terms of Use</Link></li>
           </ul>
         </nav>
       </div>
       <p className="border-t border-line py-4 text-center text-xs text-ink-subtle">
-        Map data © OpenStreetMap contributors. Prices in INR (₹), may exclude GST and parking fees.
+        Map and station data ©{" "}
+        <a className="underline underline-offset-2" href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>{" "}
+        (ODbL). Prices in INR (₹), may exclude GST and parking fees.
       </p>
     </footer>
   );

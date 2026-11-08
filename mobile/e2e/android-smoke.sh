@@ -15,8 +15,11 @@ dump() { adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb shell ca
 waitfor() { # waitfor <regex> <seconds>
   local end=$((SECONDS + ${2:-45}))
   while [ $SECONDS -lt $end ]; do dump | $UI has "$1" && return 0; sleep 2; done; return 1; }
-tap() { # tap <regex>
-  local xy; xy=$(dump | $UI find "$1") || return 1; adb shell input tap $xy; }
+tap() { # tap <regex> — retries for up to 20 s while the page settles
+  local xy end=$((SECONDS + 20))
+  while [ $SECONDS -lt $end ]; do xy=$(dump | $UI find "$1") && { adb shell input tap $xy; return 0; }; sleep 2; done; return 1; }
+tap_input() { local xy end=$((SECONDS + 20))
+  while [ $SECONDS -lt $end ]; do xy=$(dump | $UI edit) && { adb shell input tap $xy; return 0; }; sleep 2; done; return 1; }
 foreground() { adb shell dumpsys activity activities 2>/dev/null | grep -m1 -E "topResumedActivity|mResumedActivity" ; }
 check() { # check <name> <regex> [seconds]
   if waitfor "$2" "${3:-45}"; then ok "$1"; else bad "$1"; echo "     visible: $(dump | $UI texts | cut -c1-400)"; fi; shot "$1"; }
@@ -30,14 +33,17 @@ extra=$(echo "$perms" | tr ' ' '\n' | grep -vE "^(android.permission.(INTERNET|A
 [ -z "$extra" ] && ok "no unexpected permissions" || bad "unexpected permissions: $extra"
 adb shell pm grant $PKG android.permission.ACCESS_FINE_LOCATION
 adb shell pm grant $PKG android.permission.ACCESS_COARSE_LOCATION
-adb emu geo fix 72.8777 19.0760 >/dev/null 2>&1 || true   # Mumbai (longitude latitude)
+adb shell cmd location set-location-enabled true >/dev/null 2>&1 || true
+adb shell settings put secure location_mode 3 >/dev/null 2>&1 || true
+geo() { for _ in 1 2 3; do adb emu geo fix 72.8777 19.0760 >/dev/null 2>&1; sleep 1; done; }   # Mumbai (longitude latitude)
+geo
 
 adb shell am start -W -n $PKG/.MainActivity >/dev/null
 check "app launches and loads the live home page" "Charge with confidence|Find charging|stations" 120
 foreground | grep -q $PKG && ok "ChargeSetu is the foreground app" || bad "ChargeSetu is the foreground app"
 
 # Search
-if tap "Search city, area or station name|Search city"; then
+if tap_input; then
   sleep 1; adb shell input text "Delhi"; adb shell input keyevent 66
   check "search: Delhi returns results" "stations? found|No stations match" 60
 else bad "search field found"; fi
@@ -63,12 +69,16 @@ else bad "directions: a result to open"; fi
 # Location: "Stations near me"
 adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.MainActivity >/dev/null
 waitfor "Charge with confidence|Stations near me" 90
-if tap "Stations near me"; then
+geo
+if tap "Stations near me|मेरे पास"; then
+  geo
   check "location: stations sorted by distance" "Sorted by distance|km away" 60
 else bad "location: 'Stations near me' button"; fi
 
-# Map
-if tap "^Map$|Map view"; then
+# Map (from the stations list)
+tap "^(Find stations|Stations)$" || true
+waitfor "stations? found|Charging stations" 45
+if tap "^Map$|Map view|^नक्शा$"; then
   check "map renders" "Leaflet|Tap a number|Loading stations|No stations in this view|OpenStreetMap" 60
 else bad "map: view toggle"; fi
 

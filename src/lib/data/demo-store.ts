@@ -109,6 +109,7 @@ function rowToStation(r: Record<string, unknown>, publish: boolean): Station {
     locationQuality: r["location_quality"] === "suspect" ? "suspect" : "ok",
     nameIsDerived: r["name_is_derived"] === true,
     dataQualityScore: num("data_quality_score"),
+    sourceNotes: str("source_notes"),
     createdAt: ts,
     updatedAt: ts,
   };
@@ -364,6 +365,7 @@ export const demoStore: DataStore = {
       locationQuality: "ok",
       nameIsDerived: false,
       dataQualityScore: null,
+      sourceNotes: null,
       ...input,
       id: crypto.randomUUID(),
       slug: uniqueSlug(input.name),

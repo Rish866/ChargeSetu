@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { buttonClasses } from "@/components/ui/button";
 import { INDIA_BOUNDS } from "@/lib/constants";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
 
 /** Asks for the browser location and opens the directory sorted by distance. */
 export function NearMeButton({ variant = "secondary" }: { variant?: "primary" | "secondary" }) {
+  const t = useT();
   const router = useRouter();
   const [state, setState] = useState<"idle" | "locating" | "error" | "outside">("idle");
 
