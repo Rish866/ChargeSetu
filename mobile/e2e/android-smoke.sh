@@ -22,7 +22,7 @@ tap_input() { local xy end=$((SECONDS + 20))
   while [ $SECONDS -lt $end ]; do xy=$(dump | $UI edit) && { adb shell input tap $xy; return 0; }; sleep 2; done; return 1; }
 foreground() { adb shell dumpsys activity activities 2>/dev/null | grep -m1 -E "topResumedActivity|mResumedActivity" ; }
 check() { # check <name> <regex> [seconds]
-  if waitfor "$2" "${3:-45}"; then ok "$1"; else bad "$1"; echo "     visible: $(dump | $UI texts | cut -c1-400)"; fi; shot "$1"; }
+  if waitfor "$2" "${3:-45}"; then ok "$1"; else bad "$1"; echo "     visible: $(dump | $UI texts | cut -c1-1500)"; fi; shot "$1"; }
 
 adb wait-for-device
 adb shell settings put global window_animation_scale 0; adb shell settings put global transition_animation_scale 0; adb shell settings put global animator_duration_scale 0
@@ -72,7 +72,8 @@ waitfor "Charge with confidence|Stations near me" 90
 geo
 if tap "Stations near me|मेरे पास"; then
   geo
-  check "location: stations sorted by distance" "Sorted by distance|km away" 60
+  geo
+  check "location: stations sorted by distance" "Sorted by distance|km away|दूरी के क्रम" 75
 else bad "location: 'Stations near me' button"; fi
 
 # Map (from the stations list)
@@ -93,5 +94,6 @@ if tap "^Sign in$"; then
   check "login: real auth service answers (wrong password rejected)" "don.t match|Check them and try again|Too many|confirm your email" 60
 else bad "login: Sign in link"; fi
 
-echo; echo "$pass passed, $fail failed"
+echo; ls -la android-screens | tail -n +2 | wc -l | xargs -I{} echo "screenshots saved: {}"
+echo "$pass passed, $fail failed"
 [ "$fail" = 0 ]

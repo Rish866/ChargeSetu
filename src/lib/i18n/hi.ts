@@ -34,6 +34,7 @@ export const hi: Messages = {
     nearMe: "मेरे पास के स्टेशन",
     locating: "आपकी लोकेशन ढूँढ रहे हैं…",
     locationDenied: "हम आपकी लोकेशन नहीं ले पाए। आप फिर भी शहर या इलाके से खोज सकते हैं।",
+    locationOutside: "आपकी लोकेशन भारत के बाहर लगती है। शहर से खोजें।",
     popularAreas: "लोकप्रिय इलाके",
     featured: "हाल ही में सत्यापित स्टेशन",
     operatorCtaTitle: "चार्जिंग स्टेशन चलाते हैं?",

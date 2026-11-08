@@ -35,6 +35,7 @@ export const en = {
     locating: "Finding your location…",
     locationDenied:
       "We couldn't access your location. You can still search by city or area.",
+    locationOutside: "Your location appears to be outside India. Search by city instead.",
     popularAreas: "Popular areas",
     featured: "Recently verified stations",
     operatorCtaTitle: "Run charging stations?",
