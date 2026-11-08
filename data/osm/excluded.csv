@@ -1,0 +1,88 @@
+osm_id,reason,name,operator
+node/10778957417,access_private,,
+node/10830973004,access_no,,
+node/11463172582,battery_swap_not_a_charger,,Honda e:swap
+node/11902522652,access_no,,Okaya
+node/11927677058,battery_swap_not_a_charger,Battery Swap,ChargePoint
+node/12031201050,battery_swap_not_a_charger,Swap Point,Sun Mobility
+node/12100028686,battery_swap_not_a_charger,Honda e:swap,Honda e:swap
+node/12123396312,battery_swap_not_a_charger,,Yuma
+node/12125802596,battery_swap_not_a_charger,Honda e:swap,Honda e:swap
+node/12169023077,battery_swap_not_a_charger,Battery Swapping Station,
+node/12196467738,battery_swap_not_a_charger,,Battery Smart
+node/12197027554,access_private,,Ather
+node/12492566397,battery_swap_not_a_charger,Honda e:swap,Honda e:swap
+node/12492581619,battery_swap_not_a_charger,Honda e:swap,Honda e:swap
+node/12519643346,battery_swap_not_a_charger,Honda e:swap,Honda e:swap
+node/12534145133,battery_swap_not_a_charger,Honda e:swap,
+node/12534184756,battery_swap_not_a_charger,Honda e:swap,
+node/12647193426,battery_swap_not_a_charger,,Yuma
+node/12788139581,battery_swap_not_a_charger,Honda e:swap,Honda e:swap
+node/12903526837,battery_swap_not_a_charger,,Yuma
+node/12968864355,access_private,,
+node/12973875562,access_no,,
+node/13208141191,access_private,,Nuego
+node/13277046524,battery_swap_not_a_charger,Honda e:swap,Honda e:swap
+node/13277046525,battery_swap_not_a_charger,Honda e:swap,Honda e:swap
+node/13566426890,battery_swap_not_a_charger,,Sun Mobility
+node/13632992904,battery_swap_not_a_charger,,Honda e:swap
+node/13632992905,battery_swap_not_a_charger,,Yuma
+node/13746020743,battery_swap_not_a_charger,,Yuma
+node/13982741917,battery_swap_not_a_charger,,Yuma
+node/13999844996,battery_swap_not_a_charger,,Yuma
+node/14188555471,battery_swap_not_a_charger,,Yuma
+way/1222357597,access_private,,
+way/1299079174,access_private,,FreshBus Charging Point
+way/1491010012,access_private,,Bolt Earth
+way/1491224554,access_private,,Bolt Earth
+way/1491224555,access_private,,Bolt Earth
+relation/20357586,access_private,,Bolt Earth
+node/14322512186,duplicate_of:osm_node_14322512187,,
+node/13624573656,duplicate_of:osm_node_13624573647,,
+node/11083172401,duplicate_of:osm_node_11083172400,,
+node/13639965597,duplicate_of:osm_node_13314245144,,
+node/13639995467,duplicate_of:osm_node_11505634206,,
+node/13775144101,duplicate_of:osm_node_13775144001,,
+node/6404118988,duplicate_of:osm_node_6404118987,,
+node/9952802374,duplicate_of:osm_node_9952802373,,
+way/1412674423,duplicate_of:osm_node_9952180939,,
+way/1510242804,duplicate_of:osm_node_13805934243,,
+node/10008994594,duplicate_of:osm_node_10008994593,,
+node/10241805232,duplicate_of:osm_node_10241768254,,
+node/10241808063,duplicate_of:osm_node_10241768254,,
+node/10908485595,duplicate_of:osm_node_10908485585,,
+node/11030050467,duplicate_of:osm_node_11030050466,,
+node/11288533006,duplicate_of:osm_node_11288533005,,
+node/11288533008,duplicate_of:osm_node_11288533005,,
+node/11288533010,duplicate_of:osm_node_11288533005,,
+node/11288533011,duplicate_of:osm_node_11288533005,,
+node/11414388216,duplicate_of:osm_node_11414388215,,
+node/11421789521,duplicate_of:osm_node_11421789517,,
+node/11454822430,duplicate_of:osm_node_11454822427,,
+node/11454822431,duplicate_of:osm_node_11454822427,,
+node/11601441778,duplicate_of:osm_node_11601441779,,
+node/11601441781,duplicate_of:osm_node_11601441779,,
+node/11697454712,duplicate_of:osm_node_11697454694,,
+node/11882034353,duplicate_of:osm_node_11882034350,,
+node/11891087068,duplicate_of:osm_node_11891087067,,
+node/12823839873,duplicate_of:osm_way_1230812469,,
+node/12901933483,duplicate_of:osm_node_12901933482,,
+node/13243279486,duplicate_of:osm_node_13246707689,,
+node/13640131586,duplicate_of:osm_node_13640131587,,
+node/13688398203,duplicate_of:osm_node_13688377501,,
+node/13805934247,duplicate_of:osm_node_13805934243,,
+node/14016861905,duplicate_of:osm_node_11132023351,,
+node/14058958254,duplicate_of:osm_node_13633628620,,
+node/14058958262,duplicate_of:osm_node_13633628620,,
+node/14106405348,duplicate_of:osm_node_13351067902,,
+node/14340600391,duplicate_of:osm_node_14340600353,,
+node/14340600400,duplicate_of:osm_node_14340600353,,
+node/14344975845,duplicate_of:osm_node_14344975814,,
+node/14344975858,duplicate_of:osm_node_14344975814,,
+node/6961442954,duplicate_of:osm_node_6961442929,,
+node/9684753377,duplicate_of:osm_node_9684753376,,
+node/9684753378,duplicate_of:osm_node_9684753376,,
+node/9739382793,duplicate_of:osm_node_11891087067,,
+node/9739382794,duplicate_of:osm_node_11891087067,,
+node/9739382795,duplicate_of:osm_node_11891087067,,
+node/9917415769,duplicate_of:osm_node_9917415768,,

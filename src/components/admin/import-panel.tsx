@@ -209,7 +209,8 @@ export function ImportPanel({ states }: { states: string[] }) {
           Demo stations are hidden, not deleted. This only works once real stations are published. Download the backup first.
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <a href="/admin/data/demo-backup" className="text-sm font-semibold underline underline-offset-2">
+          {/* A file download (route handler), not a page — must be a plain <a>. */}
+          <a href="/admin/data/demo-backup" download className="text-sm font-semibold underline underline-offset-2">
             Download demo backup (CSV)
           </a>
           <input

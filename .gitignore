@@ -49,3 +49,9 @@ e2e-failure.png
 data/india_ev_charging_raw.csv
 data/india_ev_charging_clean.csv
 data/india_ev_charging_rejected.csv
+
+# Android release signing — never commit
+*.jks
+*.keystore
+signing-secrets.env
+ANDROID_KEYSTORE_BASE64.txt

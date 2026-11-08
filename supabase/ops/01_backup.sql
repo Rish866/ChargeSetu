@@ -13,7 +13,13 @@ declare
   t record;
   src bigint;
   dst bigint;
+  i int := 1;
 begin
+  -- Never overwrite: add a suffix if a backup with this name already exists.
+  while exists (select 1 from pg_namespace where nspname = s) loop
+    i := i + 1;
+    s := 'backup_' || to_char(clock_timestamp() at time zone 'Asia/Kolkata', 'YYYYMMDD_HH24MISS') || '_' || i;
+  end loop;
   execute format('create schema %I', s);
   execute format('revoke all on schema %I from public', s);
   if exists (select 1 from pg_roles where rolname = 'anon') then execute format('revoke all on schema %I from anon', s); end if;
@@ -33,7 +39,7 @@ end $$;
 do $$
 declare s text;
 begin
-  select nspname into s from pg_namespace where nspname like 'backup\_%' order by nspname desc limit 1;
+  select n.nspname into s from pg_namespace n where n.nspname like 'backup\_%' order by n.oid desc limit 1;
   execute format('create or replace view pg_temp.latest_backup as select %L::text as backup_schema, * from %I._manifest', s, s);
 end $$;
 select * from pg_temp.latest_backup order by table_name;

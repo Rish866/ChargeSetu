@@ -51,6 +51,25 @@ try {
   await page.waitForSelector("text=/\\d+ stations? found/");
   ok("home search opens directory", true);
 
+  // Hindi: switch language, same URLs, then switch back
+  await page.goto(`${BASE}/`);
+  await page.click("button[aria-label*='Hindi']");
+  await page.waitForSelector("text=भारत में कहीं भी भरोसे के साथ चार्ज करें");
+  ok("hindi: home page in Hindi", (await page.getAttribute("html", "lang")) === "hi-IN");
+  await page.goto(`${BASE}/stations`);
+  await page.waitForSelector("text=/स्टेशन मिले/");
+  ok("hindi: directory in Hindi at the same URL", page.url().endsWith("/stations"));
+  await a11y("stations (hindi)");
+  await page.click("button[aria-label*='English']");
+  await page.waitForSelector("text=/stations? found/");
+  ok("hindi: switch back to English", (await page.getAttribute("html", "lang")) === "en-IN");
+  const hiDirect = await page.request.get(`${BASE}/hi/about`);
+  ok("hindi: /hi/... URLs work directly", hiDirect.status() === 200 && (await hiDirect.text()).includes("lang=\"hi-IN\""));
+  await page.goto(`${BASE}/en/open-data`); // an /en/ URL also switches the cookie back to English
+  ok("open data page with ODbL notice", (await page.locator("text=Open Database License").count()) >= 1);
+  const missing = await page.goto(`${BASE}/no-such-page-xyz`);
+  ok("unknown URL shows not-found page", (await page.locator("text=/not found|couldn.t find/i").count()) > 0, String(missing?.status()));
+
   await page.goto(`${BASE}/stations`);
   await page.waitForSelector("text=14 stations found");
   await a11y("stations list");
@@ -384,6 +403,7 @@ try {
   const anonBackup = await anon.request.get(`${BASE}/admin/data/demo-backup`);
   ok("demo backup forbidden to visitors", anonBackup.status() === 403);
   const anonClaim = await anon.goto(`${BASE}/stations/nonexistent/claim`);
+  await anon.waitForSelector("text=/not found/i", { timeout: 15000 }).catch(() => null);
   ok("claim page for missing station is a not-found page", (await anon.locator("text=/not found/i").count()) > 0, String(anonClaim?.status()));
 } catch (err) {
   results.push(`FAIL exception at ${page.url()}: ${err.message.split("\n")[0]}`);

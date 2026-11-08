@@ -8,13 +8,13 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "check = read-only status, backup = in-database backup, migrate = backup + nationwide migration + checks, verify = read-only checks"
+        description: "check/verify = read-only; backup; migrate; import-osm (hidden); publish-osm; hide-demo; rollback-osm"
         required: true
         default: check
         type: choice
-        options: [check, backup, migrate, verify]
+        options: [check, backup, verify, migrate, import-osm, publish-osm, hide-demo, rollback-osm]
       confirm:
-        description: 'For "migrate" only: type APPLY NATIONWIDE MIGRATION'
+        description: 'Writing modes: APPLY MIGRATIONS / IMPORT OSM / PUBLISH OSM / HIDE DEMO / ROLLBACK OSM'
         required: false
         default: ""
 

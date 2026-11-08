@@ -20,7 +20,9 @@ const RULES: Array<{ id: string; re: RegExp; min: number }> = [
   { id: "replacement_or_private_use_characters", re: /[\uFFFD\uE000-\uF8FF]/g, min: 1 },
   // Latin Extended-A/B, IPA, spacing modifiers, combining marks, Greek, Cyrillic:
   // not used in this English-language Indian list; they appear only as mojibake.
-  { id: "mojibake_characters", re: /[\u0100-\u036F\u0370-\u03FF\u0400-\u04FF]/g, min: 1 },
+  // Exception: the macron vowels ā ē ī ō ū (Ā Ē Ī Ō Ū) used in transliterated Indian
+  // place names, e.g. "Devadānappatti".
+  { id: "mojibake_characters", re: /(?![\u0100\u0101\u0112\u0113\u012A\u012B\u014C\u014D\u016A\u016B])[\u0100-\u036F\u0370-\u03FF\u0400-\u04FF]/g, min: 1 },
   // Letters shifted down by one code point turn "A" into "@": "B@MF@KNQD" (= "Bangalore").
   { id: "shifted_ascii", re: /[A-Z]@(?=[A-Z])/g, min: 3 },
 ];

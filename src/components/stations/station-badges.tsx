@@ -3,10 +3,11 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { connectorCurrent, connectorLabel, LIVE_AVAILABILITY_CONNECTED } from "@/lib/constants";
 import { formatDate, formatKw } from "@/lib/format";
 import { verificationFreshness } from "@/lib/india";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 import type { Station, StationStatus } from "@/lib/types";
 
-export function ConnectorBadges({ connectors }: { connectors: string[] }) {
+export async function ConnectorBadges({ connectors }: { connectors: string[] }) {
+  const t = await getT();
   return (
     <ul className="flex flex-wrap gap-1.5" aria-label={t.stations.connectors}>
       {connectors.map((c) => (
@@ -24,11 +25,12 @@ export function ConnectorBadges({ connectors }: { connectors: string[] }) {
   );
 }
 
-export function PowerBadge({ kw }: { kw: number | null }) {
+export async function PowerBadge({ kw }: { kw: number | null }) {
+  const t = await getT();
   if (kw === null) {
     return (
       <Badge tone="gray" icon={<Gauge aria-hidden className="size-3" />}>
-        Power not provided
+        {t.stations.powerNotProvided}
       </Badge>
     );
   }
@@ -44,11 +46,12 @@ export function PowerBadge({ kw }: { kw: number | null }) {
 export const isSourceListed = (s: Pick<Station, "source" | "verificationStatus">) =>
   s.verificationStatus !== "verified" && (s.source === "bee" || s.source === "osm");
 
-export function VerificationBadge({ station }: { station: Pick<Station, "verificationStatus"> & Partial<Pick<Station, "source">> }) {
+export async function VerificationBadge({ station }: { station: Pick<Station, "verificationStatus"> & Partial<Pick<Station, "source">> }) {
+  const t = await getT();
   if (station.verificationStatus !== "verified" && (station.source === "bee" || station.source === "osm")) {
     return (
       <Badge tone="amber" icon={<CircleDashed aria-hidden className="size-3.5" />}>
-        Source-listed · status unconfirmed
+        {t.stations.sourceListedBadge}
       </Badge>
     );
   }
@@ -70,11 +73,13 @@ const statusTone: Record<StationStatus, BadgeTone> = {
   inactive: "gray",
 };
 
-export function StatusBadge({ status }: { status: StationStatus }) {
+export async function StatusBadge({ status }: { status: StationStatus }) {
+  const t = await getT();
   return <Badge tone={statusTone[status]}>{t.status[status]}</Badge>;
 }
 
-export function DemoBadge({ station }: { station: Pick<Station, "source"> }) {
+export async function DemoBadge({ station }: { station: Pick<Station, "source"> }) {
+  const t = await getT();
   if (station.source !== "demo") return null;
   return (
     <Badge tone="amber" icon={<FlaskConical aria-hidden className="size-3" />}>
@@ -84,17 +89,16 @@ export function DemoBadge({ station }: { station: Pick<Station, "source"> }) {
 }
 
 /** "Verified 19 days ago (12 Oct 2026)", with a warning once data is old. */
-export function FreshnessLine({
+export async function FreshnessLine({
   station,
 }: {
   station: Pick<Station, "verificationStatus" | "lastVerifiedAt" | "updatedAt"> &
     Partial<Pick<Station, "source" | "sourceDataAsOf">>;
 }) {
+  const t = await getT();
   if (station.verificationStatus !== "verified" && (station.source === "bee" || station.source === "osm")) {
     return (
-      <p className="text-xs text-amber-800">
-        Operational status not confirmed · source list dated {formatDate(station.sourceDataAsOf ?? station.updatedAt)}
-      </p>
+      <p className="text-xs text-amber-800">{t.stations.freshnessSource(formatDate(station.sourceDataAsOf ?? station.updatedAt))}</p>
     );
   }
   if (station.verificationStatus !== "verified" || !station.lastVerifiedAt) {
@@ -114,7 +118,8 @@ export function FreshnessLine({
 }
 
 /** Honest availability label: we never show fake live status. */
-export function AvailabilityNotice({ compact = false }: { compact?: boolean }) {
+export async function AvailabilityNotice({ compact = false }: { compact?: boolean }) {
+  const t = await getT();
   if (LIVE_AVAILABILITY_CONNECTED) return null;
   return (
     <p className="flex items-center gap-1.5 text-xs text-ink-subtle" title={t.stations.availabilityHelp}>
@@ -125,12 +130,13 @@ export function AvailabilityNotice({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function VehicleBadges({ classes }: { classes: string[] }) {
+export async function VehicleBadges({ classes }: { classes: string[] }) {
   if (!classes.length) return null;
+  const t = await getT();
   return (
-    <ul className="flex flex-wrap gap-1.5" aria-label="Vehicle types">
-      {classes.includes("car") && <li><Badge tone="gray">Car</Badge></li>}
-      {classes.includes("two_three_wheeler") && <li><Badge tone="gray">2W / 3W</Badge></li>}
+    <ul className="flex flex-wrap gap-1.5" aria-label={t.filters.vehicle}>
+      {classes.includes("car") && <li><Badge tone="gray">{t.filters.car}</Badge></li>}
+      {classes.includes("two_three_wheeler") && <li><Badge tone="gray">{t.filters.quick2w}</Badge></li>}
     </ul>
   );
 }

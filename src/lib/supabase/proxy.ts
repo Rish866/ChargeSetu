@@ -6,10 +6,11 @@ import { supabaseAnonKey, supabaseUrl } from "@/lib/config";
  * Refreshes the Supabase auth session cookie on each request.
  * This is NOT authorization — pages and server actions check roles themselves.
  */
-export async function updateSupabaseSession(request: NextRequest) {
+export async function updateSupabaseSession(request: NextRequest, rewriteTo?: URL) {
   const url = supabaseUrl();
   const key = supabaseAnonKey();
-  let response = NextResponse.next({ request });
+  const pass = () => (rewriteTo ? NextResponse.rewrite(rewriteTo, { request }) : NextResponse.next({ request }));
+  let response = pass();
   if (!url || !key) return response;
 
   const supabase = createServerClient(url, key, {
@@ -21,7 +22,7 @@ export async function updateSupabaseSession(request: NextRequest) {
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value);
         }
-        response = NextResponse.next({ request });
+        response = pass();
         for (const { name, value, options } of cookiesToSet) {
           response.cookies.set(name, value, options);
         }

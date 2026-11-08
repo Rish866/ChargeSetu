@@ -21,6 +21,10 @@
     "node": ">=20.9"
   },
   "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.6.0",
+    "@capacitor/splash-screen": "8.0.2",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
     "leaflet": "^1.9.4",
@@ -33,6 +37,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@capacitor/assets": "4.0.0",
+    "@capacitor/cli": "8.6.0",
     "@electric-sql/pglite": "^0.5.14",
     "@tailwindcss/turbopack": "^4",
     "@types/leaflet": "^1.9.22",

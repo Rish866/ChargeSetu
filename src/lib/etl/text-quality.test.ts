@@ -20,6 +20,8 @@ const READABLE = [
   "B`LORE HONNAVAR ROAD, #, City=TUMKUR", // odd but readable source typo
   "Contact: ops@example.com, Sector 21", // a single @ in an email
   "Café Coffee Day, MG Road", // Latin-1 accent
+  "Devadānappatti, Dindigul", // transliteration macron (ā)
+  "Kīrtī Nagar, Ūdupi, Ōld Gōa Road, Ēluru", // all five macron vowels
   "शिवाजी नगर, पुणे", // Devanagari on its own is readable
   "அண்ணா நகர், சென்னை", // Tamil
   "Line one\nline two\ttabbed",

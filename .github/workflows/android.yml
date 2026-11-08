@@ -1,0 +1,108 @@
+# Builds the ChargeSetu Android app and tests it on an emulator against the production site.
+# Outputs (workflow artifacts):
+#   chargesetu-test-apk         debug-signed TEST build — installable, NOT for the Play Store
+#   chargesetu-release-unsigned release APK + AAB without a signature (sign locally or via secrets)
+#   chargesetu-release-signed   only when the release-signing secrets below exist
+# Release signing secrets (never committed): ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
+# ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD — see docs/ANDROID.md.
+name: Android
+
+on:
+  pull_request:
+    paths: ["android/**", "mobile/**", "capacitor.config.ts", "package.json", "package-lock.json", ".github/workflows/android.yml"]
+  push:
+    branches: [main]
+    paths: ["android/**", "mobile/**", "capacitor.config.ts", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build APK and App Bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21" }
+      - name: Android SDK 36
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-36" "build-tools;36.0.0" > /dev/null
+      - name: Sync Capacitor config into the Android project
+        run: npx cap sync android
+      - name: No secrets in the app sources
+        run: |
+          ! grep -rIlE 'sb_secret_|service_role|eyJhbGciOiJIUzI1NiIs|postgres(ql)?://' android/app/src mobile capacitor.config.ts
+      - name: Build debug APK, release APK and App Bundle
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug assembleRelease bundleRelease
+      - name: Sign release (only if signing secrets exist)
+        id: sign
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KS_B64" ]; then echo "signed=false" >> "$GITHUB_OUTPUT"; echo "No signing secrets: release outputs stay unsigned."; exit 0; fi
+          echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          BT="$ANDROID_HOME/build-tools/36.0.0"
+          mkdir -p signed
+          "$BT/zipalign" -p -f 4 android/app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" sign --ks "$RUNNER_TEMP/release.jks" --ks-pass env:KS_PASS --ks-key-alias "$KEY_ALIAS" --key-pass env:KEY_PASS --out signed/chargesetu-1.0.0-release.apk "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" verify --print-certs signed/chargesetu-1.0.0-release.apk | grep -v "SHA-1"
+          cp android/app/build/outputs/bundle/release/app-release.aab signed/chargesetu-1.0.0-release.aab
+          jarsigner -keystore "$RUNNER_TEMP/release.jks" -storepass:env KS_PASS -keypass:env KEY_PASS signed/chargesetu-1.0.0-release.aab "$KEY_ALIAS"
+          rm -f "$RUNNER_TEMP/release.jks"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+      - name: Collect outputs
+        run: |
+          mkdir -p out/test out/unsigned
+          cp android/app/build/outputs/apk/debug/app-debug.apk out/test/chargesetu-1.0.0-TEST-debug.apk
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk out/unsigned/chargesetu-1.0.0-release-UNSIGNED.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab out/unsigned/chargesetu-1.0.0-release-UNSIGNED.aab
+          (cd out && sha256sum */* | tee SHA256SUMS.txt)
+          BT="$ANDROID_HOME/build-tools/36.0.0"
+          "$BT/aapt2" dump badging out/test/chargesetu-1.0.0-TEST-debug.apk | grep -E "^package|application-label|uses-permission|sdkVersion|targetSdk"
+      - uses: actions/upload-artifact@v4
+        with: { name: chargesetu-test-apk, path: "out/test/*.apk", retention-days: 30 }
+      - uses: actions/upload-artifact@v4
+        with: { name: chargesetu-release-unsigned, path: "out/unsigned/*", retention-days: 30 }
+      - uses: actions/upload-artifact@v4
+        if: steps.sign.outputs.signed == 'true'
+        with: { name: chargesetu-release-signed, path: "signed/*", retention-days: 90 }
+
+  emulator-test:
+    name: Install and test on Android emulator (production site)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: chargesetu-test-apk, path: apk }
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Run app on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis_playstore
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash mobile/e2e/android-smoke.sh apk/chargesetu-1.0.0-TEST-debug.apk
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: android-emulator-screens, path: android-screens, retention-days: 14 }

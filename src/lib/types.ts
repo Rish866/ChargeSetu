@@ -66,6 +66,8 @@ export interface Station {
   locationQuality: LocationQuality;
   nameIsDerived: boolean;
   dataQualityScore: number | null;
+  /** Facts quoted from the data source (access, fee, …). Null when the source says nothing. */
+  sourceNotes: string | null;
 }
 
 /** One group of identical connectors at a station. */

@@ -5,20 +5,21 @@ import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { Building2, Flag, Home, Info, MapPin } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
 
-const desktopLinks = [
+type Messages = ReturnType<typeof useT>;
+const desktopLinks = (t: Messages) => [
   { href: "/stations", label: t.nav.stations },
   { href: "/about", label: t.nav.about },
   { href: "/report", label: t.nav.report },
 ];
 
-const mobileLinks = [
+const mobileLinks = (t: Messages) => [
   { href: "/", label: t.nav.home, Icon: Home },
-  { href: "/stations", label: "Stations", Icon: MapPin },
-  { href: "/report", label: "Report", Icon: Flag },
-  { href: "/about", label: "About", Icon: Info },
-  { href: "/operator", label: "Operators", Icon: Building2 },
+  { href: "/stations", label: t.nav.stations, Icon: MapPin },
+  { href: "/report", label: t.nav.report, Icon: Flag },
+  { href: "/about", label: t.nav.about, Icon: Info },
+  { href: "/operator", label: t.nav.operator, Icon: Building2 },
 ];
 
 function isActive(pathname: string | null, href: string) {
@@ -27,9 +28,10 @@ function isActive(pathname: string | null, href: string) {
 }
 
 function DesktopNavView({ pathname }: { pathname: string | null }) {
+  const t = useT();
   return (
     <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-      {desktopLinks.map((l) => (
+      {desktopLinks(t).map((l) => (
         <Link
           key={l.href}
           href={l.href}
@@ -47,13 +49,14 @@ function DesktopNavView({ pathname }: { pathname: string | null }) {
 }
 
 function MobileNavView({ pathname }: { pathname: string | null }) {
+  const t = useT();
   return (
     <nav
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
       <ul className="mx-auto grid max-w-md grid-cols-5">
-        {mobileLinks.map(({ href, label, Icon }) => {
+        {mobileLinks(t).map(({ href, label, Icon }) => {
           const active = isActive(pathname, href);
           return (
             <li key={href}>

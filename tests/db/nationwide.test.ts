@@ -42,12 +42,13 @@ interface Row {
   points: Array<{ standard: string; current: string; power_kw: number | null; connector_count: number; vehicle_classes: string[] }>;
 }
 const importRow = (i: number, over: Partial<Row> = {}): Row => ({
-  source: "bee", external_id: `evs_test${i}`, name: `TestNet – Town ${i}`, slug: `testnet-town-${i}-evs-test${i}`, network: "TestNet", address: `Road ${i}, Town`,
+  source: "osm", external_id: `evs_test${i}`, name: `TestNet – Town ${i}`, slug: `testnet-town-${i}-evs-test${i}`, network: "TestNet", address: `Road ${i}, Town`,
   city: "Town", district: "District", state: "Maharashtra", latitude: 19 + i / 1000, longitude: 73 + i / 1000, connector_types: ["ccs2"], connector_count: 2,
   power_kw: 60, vehicle_classes: ["car"], source_url: "http://beeindia.gov.in/", source_attribution: "BEE", source_data_as_of: "2025-10-26",
   last_evidence_check: "2026-11-07T00:00:00Z", location_quality: "ok", name_is_derived: true, data_quality_score: 70, merged_source_ids: [], eligibility: "B",
   points: [{ standard: "ccs2", current: "DC", power_kw: 60, connector_count: 2, vehicle_classes: ["car"] }], ...over,
 });
+const bulk = (who: string | null, args: string) => as(who, () => rows<{ n: number }>(`select public.admin_bulk_set_status(${args}) as n`), true);
 const doImport = (who: string | null, data: Row[], publish: boolean) =>
   as(who, async () => rows<{ inserted: number; skipped: number }>(`select * from public.import_stations_batch($1::jsonb, $2, null)`, [JSON.stringify(data), publish]), true);
 
@@ -57,7 +58,7 @@ beforeAll(async () => {
     create role anon nologin; create role authenticated nologin;
     create schema auth;
     create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}'::jsonb);
-    create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claims', true)::jsonb ->> 'sub', '')::uuid $$;
+    create function auth.uid() returns uuid language sql stable as $$ select nullif(nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub', '')::uuid $$;
     grant usage on schema auth to anon, authenticated;
     grant execute on function auth.uid() to anon, authenticated;
     grant usage on schema public to anon, authenticated;
@@ -110,15 +111,15 @@ describe("bulk import", () => {
     const data = [importRow(1), importRow(2, { merged_source_ids: ["evs_old1", "evs_old2"] })];
     const [r] = await doImport(ADMIN, data, false);
     expect(r).toEqual({ inserted: 2, skipped: 0 });
-    expect(await count(`select count(*)::int n from public.stations where source = 'bee' and status = 'inactive'`)).toBe(2);
+    expect(await count(`select count(*)::int n from public.stations where source = 'osm' and status = 'inactive'`)).toBe(2);
     expect(await count(`select count(*)::int n from public.charging_points`)).toBe(2);
     expect(await count(`select count(*)::int n from public.station_sources where is_merged_record`)).toBe(2);
-    expect(await count(`select count(*)::int n from public.stations where source = 'bee' and verification_status = 'unverified' and operator_id is null`)).toBe(2);
+    expect(await count(`select count(*)::int n from public.stations where source = 'osm' and verification_status = 'unverified' and operator_id is null`)).toBe(2);
   });
   it("is idempotent: a re-run inserts nothing and creates no duplicates", async () => {
     const [r] = await doImport(ADMIN, [importRow(1), importRow(2), importRow(3)], false);
     expect(r).toEqual({ inserted: 1, skipped: 2 });
-    expect(await count(`select count(*)::int n from public.stations where source = 'bee'`)).toBe(3);
+    expect(await count(`select count(*)::int n from public.stations where source = 'osm'`)).toBe(3);
     expect(await count(`select count(*)::int n from public.charging_points`)).toBe(3);
     const [r2] = await doImport(ADMIN, [importRow(1), importRow(2), importRow(3)], false);
     expect(r2).toEqual({ inserted: 0, skipped: 3 });
@@ -145,25 +146,24 @@ describe("bulk import", () => {
 });
 
 describe("bulk publish and hide", () => {
-  const bulk = (who: string | null, args: string) => as(who, () => rows<{ n: number }>(`select public.admin_bulk_set_status(${args}) as n`), true);
   beforeAll(async () => {
     await doImport(ADMIN, [importRow(300, { state: "Goa" }), importRow(301, { state: "Goa" }), importRow(302, { state: "Goa", location_quality: "suspect", eligibility: "C" }), importRow(303, { state: "Kerala" })], false);
   });
   it("is admin-only", async () => {
-    for (const who of [null, CUST, OP_A]) await expect(bulk(who, `'bee', 'Goa', 'inactive', 'published'`)).rejects.toThrow();
+    for (const who of [null, CUST, OP_A]) await expect(bulk(who, `'osm', 'Goa', 'inactive', 'published'`)).rejects.toThrow();
   });
   it("publishes only hidden stations with good coordinates, one state, in chunks", async () => {
-    expect((await bulk(ADMIN, `'bee', 'Goa', 'inactive', 'published', 1`))[0].n).toBe(1);
-    expect((await bulk(ADMIN, `'bee', 'Goa', 'inactive', 'published', 1`))[0].n).toBe(1);
-    expect((await bulk(ADMIN, `'bee', 'Goa', 'inactive', 'published', 1`))[0].n).toBe(0); // the suspect one stays hidden
+    expect((await bulk(ADMIN, `'osm', 'Goa', 'inactive', 'published', 1`))[0].n).toBe(1);
+    expect((await bulk(ADMIN, `'osm', 'Goa', 'inactive', 'published', 1`))[0].n).toBe(1);
+    expect((await bulk(ADMIN, `'osm', 'Goa', 'inactive', 'published', 1`))[0].n).toBe(0); // the suspect one stays hidden
     expect(await count(`select count(*)::int n from public.stations where external_id in ('evs_test300','evs_test301') and status = 'published'`)).toBe(2);
     expect(await count(`select count(*)::int n from public.stations where external_id = 'evs_test302' and status = 'inactive'`)).toBe(1);
     expect(await count(`select count(*)::int n from public.stations where external_id = 'evs_test303' and status = 'inactive'`)).toBe(1); // other state untouched
   });
   it("refuses unsafe transitions and can hide stations again", async () => {
-    await expect(bulk(ADMIN, `'bee', null, 'pending_review', 'published'`)).rejects.toThrow();
-    await expect(bulk(ADMIN, `'bee', null, 'published', 'rejected'`)).rejects.toThrow();
-    expect((await bulk(ADMIN, `'bee', 'Goa', 'published', 'inactive'`))[0].n).toBe(2);
+    await expect(bulk(ADMIN, `'osm', null, 'pending_review', 'published'`)).rejects.toThrow();
+    await expect(bulk(ADMIN, `'osm', null, 'published', 'rejected'`)).rejects.toThrow();
+    expect((await bulk(ADMIN, `'osm', 'Goa', 'published', 'inactive'`))[0].n).toBe(2);
   });
   it("can hide the fictional demo stations without touching real ones", async () => {
     const before = await count(`select count(*)::int n from public.stations where source <> 'demo' and status = 'published'`);
@@ -177,7 +177,7 @@ describe("what the public can see", () => {
   it("shows anonymous visitors only published stations and their connectors", async () => {
     const stations = await as(null, () => rows<{ source: string; status: string }>(`select source::text, status::text from public.stations`));
     expect(stations.every((s) => s.status === "published")).toBe(true);
-    expect(stations.some((s) => s.source === "bee")).toBe(true);
+    expect(stations.some((s) => s.source === "osm")).toBe(true);
     const pts = await as(null, () => count(`select count(*)::int n from public.charging_points`));
     expect(pts).toBe(1); // only the one published imported station
   });
@@ -272,7 +272,7 @@ describe("performance at national scale", () => {
     await db.exec(`
       insert into public.stations (name, slug, network, address, city, state, latitude, longitude, connector_types, vehicle_classes, status, verification_status, source, external_id, power_kw, connector_count)
       select 'Load Test ' || g, 'load-test-' || g, 'LoadNet' || (g % 40), 'Address ' || g, 'City' || (g % 500), 'Karnataka',
-             8 + (g % 2900) / 100.0, 69 + (g % 2800) / 100.0, '{ccs2}', '{car}', 'published', 'unverified', 'bee', 'load_' || g, 30, 2
+             8 + (g % 2900) / 100.0, 69 + (g % 2800) / 100.0, '{ccs2}', '{car}', 'published', 'unverified', 'osm', 'load_' || g, 30, 2
       from generate_series(1, 30000) g;
     `);
     expect(await count(`select count(*)::int n from public.stations where status = 'published'`)).toBeGreaterThan(30000);
@@ -287,4 +287,40 @@ describe("performance at national scale", () => {
     expect(t1 - t0).toBeLessThan(3000);
     expect(t2 - t1).toBeLessThan(3000);
   }, 120_000);
+});
+
+describe("per-source publication permissions", () => {
+  const beeRow = (i: number) => importRow(i, { source: "bee", external_id: `evs_perm${i}`, slug: `perm-${i}` });
+  it("keeps BEE stations hidden even when an admin imports with publish = true", async () => {
+    await doImport(ADMIN, [beeRow(700), beeRow(701)], true);
+    expect(await count(`select count(*)::int n from public.stations where external_id in ('evs_perm700','evs_perm701') and status = 'inactive'`)).toBe(2);
+  });
+  it("refuses BEE bulk publishing and direct publishing, by anyone", async () => {
+    await expect(bulk(ADMIN, `'bee', null, 'inactive', 'published'`)).rejects.toThrow(/not permitted/);
+    await expect(as(ADMIN, () => rows(`update public.stations set status = 'published' where external_id = 'evs_perm700'`), true)).rejects.toThrow(/not permitted/);
+    await expect(db.query(`update public.stations set status = 'published' where external_id = 'evs_perm700'`)).rejects.toThrow(/not permitted/);
+  });
+  it("lets the public read the permissions but nobody change them through the API", async () => {
+    const r = await as(null, () => rows<{ source: string; publish_allowed: boolean }>(`select source, publish_allowed from public.source_publication_permissions order by source`));
+    expect(r).toEqual([{ source: "bee", publish_allowed: false }, { source: "osm", publish_allowed: true }]);
+    await expect(as(ADMIN, () => rows(`update public.source_publication_permissions set publish_allowed = true where source = 'bee'`), true)).rejects.toThrow();
+    expect(await count(`select count(*)::int n from public.source_publication_permissions where source = 'bee' and publish_allowed`)).toBe(0);
+  });
+  it("allows OSM publishing and the trusted operations context to import", async () => {
+    // Direct connection as the database owner = operations workflow (no API request claims).
+    const r = await db.query<{ inserted: number }>(`select * from public.import_stations_batch($1::jsonb, true, null)`, [JSON.stringify([importRow(720, { external_id: "osm_node_720", slug: "osm-720" })])]);
+    expect(Number(r.rows[0].inserted)).toBe(1);
+    expect(await count(`select count(*)::int n from public.stations where external_id = 'osm_node_720' and status = 'published'`)).toBe(1);
+  });
+  it("does not treat a website request as the operations context", async () => {
+    for (const who of [null, CUST, OP_A]) {
+      const [x] = await as(who, () => rows<{ ok: boolean }>(`select public.is_ops_context() as ok`));
+      expect(x.ok).toBe(false);
+    }
+  });
+  it("stores source notes and opening hours from the import", async () => {
+    await doImport(ADMIN, [importRow(730, { external_id: "osm_node_730", slug: "osm-730", ...({ opening_hours: "24/7", source_notes: "Access: customers (as tagged in OpenStreetMap)" } as object) })], false);
+    const [s] = await rows<{ opening_hours: string; source_notes: string }>(`select opening_hours, source_notes from public.stations where external_id = 'osm_node_730'`);
+    expect(s).toEqual({ opening_hours: "24/7", source_notes: "Access: customers (as tagged in OpenStreetMap)" });
+  });
 });

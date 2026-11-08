@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ChargeSetu</string>
+    <string name="title_activity_main">ChargeSetu</string>
+    <string name="package_name">com.chargesetu.app</string>
+    <string name="custom_url_scheme">com.chargesetu.app</string>
+</resources>

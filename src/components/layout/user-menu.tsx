@@ -3,10 +3,11 @@ import { LogOut, ShieldCheck, UserRound } from "lucide-react";
 import { signOut } from "@/app/actions/auth";
 import { buttonClasses } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth/session";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
 /** Reads the session, so it must render inside <Suspense>. */
 export async function UserMenu() {
+  const t = await getT();
   const user = await getCurrentUser();
 
   if (!user) {
